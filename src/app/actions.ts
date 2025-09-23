@@ -18,12 +18,17 @@ import { getVoucherStatus, getAllVouchersWithPackageInfo } from '@/lib/database-
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
 const nameSchema = z.string().min(2, { message: 'Name must be at least 2 characters.' });
 
+type ExistingVoucherInfo = {
+    code: string;
+    packageName: string;
+    status: 'Active' | 'Expired' | 'Available';
+    expiry: string | null;
+}
+
 type PurchaseState = {
     message: string;
     success: boolean;
-    activeVoucherCode?: string;
-    activeVoucherExpiry?: string;
-    activeVoucherPackageName?: string;
+    existingVouchers?: ExistingVoucherInfo[];
 }
 
 export async function purchaseVoucherAction(
@@ -46,21 +51,23 @@ export async function purchaseVoucherAction(
   // Check for existing active voucher, unless a force purchase is requested
   if (!forcePurchase) {
       const allVouchers = await getAllVouchersWithPackageInfo();
-      const existingActiveVoucher = allVouchers.find(v => {
-          if (v.purchasedBy === validatedPhoneNumber) {
-              const status = getVoucherStatus(v, v.packageDurationHours);
-              return status.status === 'Active';
-          }
-          return false;
-      });
+      const existingVouchers = allVouchers.filter(v => v.purchasedBy === validatedPhoneNumber);
 
-      if (existingActiveVoucher) {
+      if (existingVouchers.length > 0) {
+          const existingVouchersInfo = existingVouchers.map(v => {
+              const { status, expiry } = getVoucherStatus(v, v.packageDurationHours);
+              return {
+                  code: v.code,
+                  packageName: v.packageName,
+                  status: status,
+                  expiry: expiry,
+              }
+          }).sort((a,b) => (a.status === 'Active' ? -1 : 1)); // Show active ones first
+
           return {
-              message: 'You already have an active voucher.',
+              message: 'You already have purchased vouchers.',
               success: false,
-              activeVoucherCode: existingActiveVoucher.code,
-              activeVoucherExpiry: getVoucherStatus(existingActiveVoucher, existingActiveVoucher.packageDurationHours).expiry,
-              activeVoucherPackageName: existingActiveVoucher.packageName,
+              existingVouchers: existingVouchersInfo,
           }
       }
   }
@@ -105,7 +112,7 @@ export async function purchaseVoucherAction(
     console.error('Voucher purchase process failed:', error);
     return { message: 'An unexpected error occurred during your purchase.', success: false };
   }
-
+  
   if (hasSucceeded && voucherCode) {
     revalidatePath(`/admin`);
     redirect(`/voucher/${voucherCode}`);
