@@ -201,13 +201,18 @@ export async function uploadVouchersAction(
     }
 
     const header = rows.shift()!.split(',').map(h => h.trim().toLowerCase());
+    
+    // Support both 'vouchercode' and 'username' for Mikhmon exports
     const voucherCodeIndex = header.indexOf('vouchercode');
+    const usernameIndex = header.indexOf('username');
+    const codeIndex = voucherCodeIndex !== -1 ? voucherCodeIndex : usernameIndex;
 
-    if (voucherCodeIndex === -1) {
-        return { message: 'CSV must have a "voucherCode" column.', success: false };
+
+    if (codeIndex === -1) {
+        return { message: 'CSV must have a "voucherCode" or "username" column.', success: false };
     }
     
-    const voucherCodes = rows.map(row => row.split(',')[voucherCodeIndex]?.trim()).filter(Boolean);
+    const voucherCodes = rows.map(row => row.split(',')[codeIndex]?.trim()).filter(Boolean);
     const voucherCount = voucherCodes.length;
     
     if (voucherCount === 0) {
