@@ -22,7 +22,7 @@ const processPaymentTool = ai.defineTool(
     {
         name: 'processPaymentTool',
         description: 'Initiates a payment with the payment provider.',
-        inputSchema: z.custom<ProcessPaymentInput>(),
+        inputSchema: z.custom<ProcessPaymentInput & { ref: string }>(),
         outputSchema: z.custom<ProcessPaymentOutput>(),
     },
     async (payload) => {
@@ -42,11 +42,11 @@ const processPaymentTool = ai.defineTool(
         const body = {
             amount: formattedAmount,
             number: payload.number,
-            refer: payload.ref,
+            refer: payload.ref, // Use 'refer' as per curl
             username: payload.username,
             password: payload.password,
-            success: successUrl,
-            failed: failedUrl,
+            'success-re-url': successUrl, // Use 'success-re-url'
+            'failed-re-url': failedUrl,   // Use 'failed-re-url'
         };
 
         try {
@@ -59,9 +59,12 @@ const processPaymentTool = ai.defineTool(
             const responseDataText = await response.text();
 
             if (!response.ok) {
+                 const errorBody = JSON.parse(responseDataText);
+                 const errorMessage = `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorBody.message || responseDataText}`;
                  return {
                     success: false,
-                    message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${responseDataText}`,
+                    message: errorMessage,
+                    data: errorBody,
                 };
             }
 
@@ -70,6 +73,7 @@ const processPaymentTool = ai.defineTool(
                 
                 let transactionStatus = 'UNKNOWN';
                 let transactionReference = null;
+                // The response is a JSON object with a stringified XML in the 'response' field
                 if (responseData.response && typeof responseData.response === 'string') {
                     const statusMatch = responseData.response.match(/<TransactionStatus>(.*?)<\/TransactionStatus>/);
                     if (statusMatch && statusMatch[1]) {
@@ -100,13 +104,10 @@ const processPaymentTool = ai.defineTool(
                     };
                 }
             } catch (jsonError) {
-                 // The response from this provider is weird (JSON with XML inside).
-                 // It's possible for the outer layer to not be JSON on some errors.
-                 // Let's assume if it's not JSON, it's an initiated payment for now, but log it.
-                 console.log("Could not parse JSON, but assuming success. Body:", responseDataText);
+                 // This case should be rare if the API is consistent.
                  return {
-                    success: true,
-                    message: 'Payment initiated. The response from the provider was not in a standard JSON format.',
+                    success: false,
+                    message: 'Could not parse the JSON response from the payment provider.',
                     data: responseDataText,
                 };
             }
