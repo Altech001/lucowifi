@@ -11,6 +11,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { db } from '@/lib/firebase';
+import { ref, push, set } from 'firebase/database';
 
 const MembershipSignupInputSchema = z.object({
   name: z.string().describe('The full name of the user.'),
@@ -84,24 +86,67 @@ const analyzeDocument = ai.defineTool(
     }
 );
 
+const saveMembershipApplication = ai.defineTool(
+    {
+        name: 'saveMembershipApplication',
+        description: 'Saves a new membership application to the database.',
+        inputSchema: MembershipSignupInputSchema,
+        outputSchema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            applicationId: z.string().optional(),
+        }),
+    },
+    async (application) => {
+        try {
+            const membershipsRef = ref(db, 'memberships');
+            const newMembershipRef = push(membershipsRef);
+            
+            await set(newMembershipRef, {
+                ...application,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+            });
+
+            return {
+                success: true,
+                message: 'Application saved successfully.',
+                applicationId: newMembershipRef.key!,
+            };
+        } catch (error) {
+            console.error('Failed to save membership application:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unknown database error occurred.';
+            return {
+                success: false,
+                message: `Failed to save application: ${errorMessage}`,
+            };
+        }
+    }
+);
+
 
 const membershipSignupFlow = ai.defineFlow(
   {
     name: 'membershipSignupFlow',
     inputSchema: MembershipSignupInputSchema,
     outputSchema: MembershipSignupOutputSchema,
-    tools: [sendWelcomeMessage, analyzeDocument],
+    tools: [sendWelcomeMessage, analyzeDocument, saveMembershipApplication],
   },
   async (input) => {
-    // In a real app, you would save the user to a database here.
-    console.log(`Creating membership for ${input.name} with phone ${input.phoneNumber}, username ${input.username}`);
 
     const docAnalysis = await analyzeDocument({ documentDataUri: input.documentDataUri });
-
     if (!docAnalysis.isValid) {
         return {
             success: false,
             message: `Document verification failed: ${docAnalysis.reason}`,
+        }
+    }
+
+    const saveResult = await saveMembershipApplication(input);
+    if (!saveResult.success) {
+        return {
+            success: false,
+            message: saveResult.message,
         }
     }
     
@@ -117,9 +162,10 @@ const membershipSignupFlow = ai.defineFlow(
         message: 'Membership pending approval. Welcome message sent.',
       };
     } else {
+        // Even if welcome message fails, the application was saved.
         return {
-            success: false,
-            message: 'Failed to send welcome message.',
+            success: true, // The core task (saving) was successful
+            message: 'Membership application saved, but failed to send welcome message.',
         }
     }
   }
