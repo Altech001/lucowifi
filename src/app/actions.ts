@@ -115,6 +115,20 @@ export async function purchaseVoucherAction(
   }
   
   if (hasSucceeded && voucherCode) {
+    try {
+        const smsResult = await sendWhatsappVoucher({
+            phoneNumber: validatedPhoneNumber,
+            voucherCode: voucherCode
+        });
+        if (!smsResult.success) {
+            // Even if SMS fails, the purchase was successful. We should log this.
+            console.error(`Failed to send SMS to ${validatedPhoneNumber}: ${smsResult.message}`);
+            // We can decide if we want to show a message to the user about the SMS failure.
+            // For now, we will still redirect as the purchase is complete.
+        }
+    } catch(e) {
+        console.error(`Critical error calling sendWhatsappVoucher flow for ${validatedPhoneNumber}`, e);
+    }
     revalidatePath(`/admin`);
     redirect(`/voucher/${voucherCode}`);
   }
