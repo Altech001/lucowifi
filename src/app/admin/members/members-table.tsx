@@ -30,7 +30,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { Input } from '@/components/ui/input';
@@ -47,6 +46,7 @@ export function MembersTable({ members }: MembersTableProps) {
   const [filter, setFilter] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const [memberToReject, setMemberToReject] = useState<Membership | null>(null);
 
   const filteredMembers = useMemo(() => {
     return members
@@ -60,19 +60,16 @@ export function MembersTable({ members }: MembersTableProps) {
 
   const viewDocument = (dataUri: string) => {
     if (!dataUri) return;
-    // For images, we can open them directly.
     if (dataUri.startsWith('data:image/')) {
         const newWindow = window.open();
         newWindow?.document.write(`<img src="${dataUri}" style="max-width: 100%; height: auto;" />`);
         newWindow?.document.title = "Document Preview";
     } 
-    // For PDFs, embed them.
     else if (dataUri.startsWith('data:application/pdf')) {
          const newWindow = window.open();
          newWindow?.document.write(`<iframe src="${dataUri}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
          newWindow?.document.title = "Document Preview";
     }
-    // Fallback for other types
     else {
         window.open(dataUri, '_blank');
     }
@@ -100,6 +97,9 @@ export function MembersTable({ members }: MembersTableProps) {
             title: result.success ? 'Success' : 'Error',
             description: result.message
         });
+        if (action === 'reject') {
+            setMemberToReject(null);
+        }
     });
   }
 
@@ -155,69 +155,49 @@ export function MembersTable({ members }: MembersTableProps) {
                       {format(parseISO(member.createdAt), 'dd MMM yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
-                       <AlertDialog>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                     <DropdownMenuItem
-                                        onClick={() => viewDocument(member.documentDataUri!)}
-                                        disabled={!member.documentDataUri || isPending}
-                                    >
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        View Document
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                     {member.status === 'pending' && (
-                                        <>
-                                            <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
-                                                <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                                                Approve
-                                            </DropdownMenuItem>
-                                            <AlertDialogTrigger asChild>
-                                                <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()} disabled={isPending}>
-                                                     <XCircle className="mr-2 h-4 w-4" />
-                                                     Reject
-                                                </DropdownMenuItem>
-                                            </AlertDialogTrigger>
-                                        </>
-                                     )}
-                                     {member.status === 'rejected' && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                 <DropdownMenuItem
+                                    onClick={() => viewDocument(member.documentDataUri!)}
+                                    disabled={!member.documentDataUri || isPending}
+                                >
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    View Document
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                 {member.status === 'pending' && (
+                                    <>
                                         <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
                                             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                                            Re-Approve
+                                            Approve
                                         </DropdownMenuItem>
-                                     )}
-                                     {member.status === 'approved' && (
-                                         <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()} disabled={isPending}>
-                                                <XCircle className="mr-2 h-4 w-4" />
-                                                Reject
-                                            </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                     )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                             <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure you want to reject this membership?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This will mark the application for <strong>{member.name}</strong> as rejected. This can be undone later.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <Button variant="destructive" onClick={() => handleAction('reject', member.id)}>
-                                        Confirm Rejection
-                                    </Button>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                                        <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setMemberToReject(member)} disabled={isPending}>
+                                             <XCircle className="mr-2 h-4 w-4" />
+                                             Reject
+                                        </DropdownMenuItem>
+                                    </>
+                                 )}
+                                 {member.status === 'rejected' && (
+                                    <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
+                                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                        Re-Approve
+                                    </DropdownMenuItem>
+                                 )}
+                                 {member.status === 'approved' && (
+                                     <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setMemberToReject(member)} disabled={isPending}>
+                                        <XCircle className="mr-2 h-4 w-4" />
+                                        Reject
+                                    </DropdownMenuItem>
+                                 )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -234,6 +214,25 @@ export function MembersTable({ members }: MembersTableProps) {
           </Table>
         </div>
       </div>
+      {memberToReject && (
+        <AlertDialog open={!!memberToReject} onOpenChange={() => setMemberToReject(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to reject this membership?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will mark the application for <strong>{memberToReject.name}</strong> as rejected. This can be undone later.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button variant="destructive" onClick={() => handleAction('reject', memberToReject.id)} disabled={isPending}>
+                        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Confirm Rejection
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
