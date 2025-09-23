@@ -34,7 +34,7 @@ export default async function MembersPage() {
                         <div>
                             <div className="flex items-center gap-3">
                                 <UserCog className="h-6 w-6" />
-                                <CardTitle className="font-headline text-2xl">
+                                <CardTitle className="font-headline text-xl sm:text-2xl">
                                     Membership Management ({members.length})
                                 </CardTitle>
                             </div>
@@ -51,3 +51,4 @@ export default async function MembersPage() {
         </div>
     )
 }
+
