@@ -1,6 +1,8 @@
 
 
 
+
+
 'use server';
 
 import { z } from 'zod';
@@ -9,6 +11,7 @@ import { sendWhatsappVoucher } from '@/ai/flows/whatsapp-voucher-delivery';
 import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
 import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
+import { processPayment } from '@/ai/flows/process-payment';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Package, Voucher, PopupSettings } from '@/lib/definitions';
@@ -877,5 +880,48 @@ export async function updatePopupSettingsAction(prevState: PopupSettingsState, f
     } catch (e) {
         console.error("Failed to update popup settings", e);
         return { message: 'Failed to update settings.', success: false };
+    }
+}
+
+
+// Payment Actions
+type PaymentActionState = {
+  message: string;
+  success: boolean;
+};
+
+const paymentSchema = z.object({
+  amount: z.string().min(1, { message: 'Amount is required.' }),
+  number: z.string().min(10, { message: 'Phone number seems too short.' }),
+});
+
+export async function initiatePaymentAction(prevState: PaymentActionState, formData: FormData): Promise<PaymentActionState> {
+    const validation = paymentSchema.safeParse({
+        amount: formData.get('amount'),
+        number: formData.get('number'),
+    });
+
+    if (!validation.success) {
+        return {
+            success: false,
+            message: validation.error.errors[0].message,
+        };
+    }
+
+    const { amount, number } = validation.data;
+
+    try {
+        const result = await processPayment({ amount, number });
+        return {
+            success: result.success,
+            message: result.message,
+        };
+    } catch (error) {
+        console.error("Payment initiation action failed:", error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
+        return {
+            success: false,
+            message: errorMessage,
+        };
     }
 }

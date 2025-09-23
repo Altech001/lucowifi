@@ -1,5 +1,6 @@
 
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { addPromotionAction, deletePromotionAction, exportUserPhonesAction, sendBulkMessageAction, generateAIMessageAction } from '@/app/actions';
@@ -16,6 +17,7 @@ import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AnnouncementsForm } from './announcements-form';
 import { PopupForm } from './popup-form';
+import { PaymentForm } from './payment-form';
 
 const initialPromoState = {
     message: '',
@@ -111,10 +113,10 @@ export function SettingsForm({ packages, promotions, announcements, popupSetting
     return (
         <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-8">
-                 {/* Announcements Card */}
-                <AnnouncementsForm announcements={announcements} />
-                
-                {/* Promotions Card */}
+                 <AnnouncementsForm announcements={announcements} />
+                 
+                 <PaymentForm />
+
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-3">
@@ -184,7 +186,6 @@ export function SettingsForm({ packages, promotions, announcements, popupSetting
                 </Card>
             </div>
             <div className="space-y-8">
-                 {/* Popup Form Card */}
                  <PopupForm settings={popupSettings} />
 
                  <Card>
@@ -220,7 +221,6 @@ export function SettingsForm({ packages, promotions, announcements, popupSetting
                     </CardContent>
                 </Card>
 
-                 {/* Data Export Card */}
                 <Card>
                     <CardHeader>
                          <div className="flex items-center gap-3">
