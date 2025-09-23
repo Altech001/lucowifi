@@ -87,19 +87,28 @@ export function MembersTable({ members }: MembersTableProps) {
         return <Badge>{status}</Badge>;
     }
   };
-  
-  const handleAction = (action: 'approve' | 'reject', memberId: string) => {
+
+  const handleRejectConfirm = () => {
+    if (!memberToReject) return;
     startTransition(async () => {
-        const serverAction = action === 'approve' ? approveMembershipAction : rejectMembershipAction;
-        const result = await serverAction(memberId);
+        const result = await rejectMembershipAction(memberToReject.id);
         toast({
             variant: result.success ? 'default' : 'destructive',
             title: result.success ? 'Success' : 'Error',
             description: result.message
         });
-        if (action === 'reject') {
-            setMemberToReject(null);
-        }
+        setMemberToReject(null);
+    });
+  };
+
+  const handleApprove = (memberId: string) => {
+     startTransition(async () => {
+        const result = await approveMembershipAction(memberId);
+        toast({
+            variant: result.success ? 'default' : 'destructive',
+            title: result.success ? 'Success' : 'Error',
+            description: result.message
+        });
     });
   }
 
@@ -174,7 +183,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                 <DropdownMenuSeparator />
                                  {member.status === 'pending' && (
                                     <>
-                                        <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
+                                        <DropdownMenuItem onClick={() => handleApprove(member.id)} disabled={isPending}>
                                             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                                             Approve
                                         </DropdownMenuItem>
@@ -185,7 +194,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                     </>
                                  )}
                                  {member.status === 'rejected' && (
-                                    <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
+                                    <DropdownMenuItem onClick={() => handleApprove(member.id)} disabled={isPending}>
                                         <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                                         Re-Approve
                                     </DropdownMenuItem>
@@ -225,7 +234,7 @@ export function MembersTable({ members }: MembersTableProps) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button variant="destructive" onClick={() => handleAction('reject', memberToReject.id)} disabled={isPending}>
+                    <Button variant="destructive" onClick={handleRejectConfirm} disabled={isPending}>
                         {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Confirm Rejection
                     </Button>
