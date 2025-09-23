@@ -104,13 +104,6 @@ const processPaymentTool = ai.defineTool(
         } catch (error: any) {
             console.error('Failed to call payment API:', error);
             // Handle fetch-specific errors (e.g., network issues)
-            if (error.cause) {
-                // Node.js fetch can wrap network errors in a cause property
-                return {
-                    success: false,
-                    message: `Failed to initiate payment: A network error occurred (${error.cause.code})`,
-                };
-            }
             const errorMessage = error instanceof Error ? error.message : 'An unknown network error occurred.';
             return {
                 success: false,
