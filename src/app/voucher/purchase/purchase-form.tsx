@@ -63,7 +63,7 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
                 </p>
                 <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                     {state.existingVouchers.map((voucher, index) => (
-                        <Card key={index} className="p-3">
+                        <Card key={index} className="p-3 border-dashed">
                             <CardHeader className="p-0 mb-2 flex-row justify-between items-start">
                                 <h4 className="font-semibold text-foreground">{voucher.packageName}</h4>
                                 {getStatusBadge(voucher.status)}
@@ -77,9 +77,9 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
                                 <div className="flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-primary" />
                                     <span className="font-semibold text-foreground/80">
-                                        {voucher.status === 'Active' ? 'Expires:' : 'Expired:'}
+                                        {voucher.status === 'Active' ? 'Expires:' : (voucher.status === 'Expired' ? 'Expired:' : 'Status:')}
                                     </span>
-                                    <span>{voucher.expiry}</span>
+                                    <span>{voucher.expiry || 'Not yet activated'}</span>
                                 </div>
                             </CardContent>
                         </Card>
