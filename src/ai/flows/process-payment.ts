@@ -12,7 +12,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import type { ProcessPaymentInput, ProcessPaymentOutput } from '@/app/actions';
-import fetch from 'node-fetch';
 
 
 export async function processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentOutput> {
@@ -118,8 +117,6 @@ const processPaymentFlow = ai.defineFlow(
     const result = await processPaymentTool({
         ...input,
         ref,
-        username: input.username,
-        password: input.password
     });
     
     return result;
