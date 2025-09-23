@@ -32,20 +32,30 @@ export default function PurchasePage() {
     }
     
     return (
-        <div className="container mx-auto px-4 py-8 sm:py-12 flex items-center justify-center">
-            <Card className="w-full max-w-lg border-0">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl">
-                        Purchase: <span className="text-primary">{selectedPackage.name}</span>
-                    </CardTitle>
-                    <CardDescription>
-                        Enter your WhatsApp phone number to receive your voucher code for UGX {selectedPackage.price.toLocaleString()}.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <PurchaseForm packageSlug={selectedPackage.slug} />
-                </CardContent>
-            </Card>
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+            <div className="mb-6">
+                <Button asChild variant="outline">
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Packages
+                    </Link>
+                </Button>
+            </div>
+            <div className="flex items-center justify-center">
+                <Card className="w-full max-w-lg border-0">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl">
+                            Purchase: <span className="text-primary">{selectedPackage.name}</span>
+                        </CardTitle>
+                        <CardDescription>
+                            Enter your WhatsApp phone number to receive your voucher code for UGX {selectedPackage.price.toLocaleString()}.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <PurchaseForm packageSlug={selectedPackage.slug} />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     )
 }
