@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { useActionState } from 'react';
+import { useState, useMemo, useEffect, useRef, useActionState } from 'react';
 import type { Voucher } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import { addVoucherAction, updateVoucherAction, deleteVoucherAction } from '@/app/actions';
+import { getVoucherStatus } from '@/lib/database-data';
 
 import {
   Table,
@@ -133,14 +133,17 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
     setIsEditDialogOpen(true);
   }
   
-  const getStatus = (voucher: Voucher) => {
-    if (voucher.used) {
+  const getStatusBadge = (status: Voucher['status']) => {
+    switch (status) {
+      case 'Active':
         return <Badge variant="destructive">Active</Badge>;
-    }
-    if (voucher.usedAt) {
+      case 'Expired':
         return <Badge variant="secondary">Expired</Badge>;
+      case 'Available':
+        return <Badge variant="outline">Available</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
     }
-    return <Badge variant="outline">Available</Badge>;
   }
 
   return (
@@ -205,7 +208,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                   <TableRow key={voucher.id}>
                     <TableCell className="font-mono">{voucher.code}</TableCell>
                     <TableCell>
-                      {getStatus(voucher)}
+                      {getStatusBadge(voucher.status)}
                     </TableCell>
                     <TableCell>
                         <FormattedDate dateString={voucher.createdAt} />
@@ -237,9 +240,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                                     <form action={deleteFormAction}>
                                         <input type="hidden" name="packageSlug" value={packageSlug} />
                                         <input type="hidden" name="voucherId" value={voucher.id} />
-                                        <AlertDialogAction asChild>
-                                           <SubmitButton variant="destructive">Delete</SubmitButton>
-                                        </AlertDialogAction>
+                                        <SubmitButton variant="destructive">Delete</SubmitButton>
                                     </form>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -275,9 +276,9 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                             <Input id="editVoucherCode" name="voucherCode" defaultValue={selectedVoucher.code} required />
                         </div>
                         <div>
-                            <Label htmlFor="usedAt">Activation Date (leave blank to reset)</Label>
+                            <Label htmlFor="usedAt">Activation Date (leave blank to clear)</Label>
                             <Input id="usedAt" name="usedAt" defaultValue={selectedVoucher.usedAt || ''} placeholder="YYYY-MM-DDTHH:mm:ss.sssZ" />
-                             <p className="text-sm text-muted-foreground">Editing this will reset the voucher's timer.</p>
+                             <p className="text-sm text-muted-foreground">Setting or changing this will reset the voucher's timer.</p>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

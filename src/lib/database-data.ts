@@ -2,7 +2,7 @@
 import { db } from './firebase';
 import { ref, get, child } from 'firebase/database';
 import type { Package, Voucher } from './definitions';
-import { isAfter, addHours, parseISO } from 'date-fns';
+import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-fns';
 
 export async function getPackages(): Promise<Package[]> {
   const dbRef = ref(db);
@@ -16,20 +16,10 @@ export async function getPackages(): Promise<Package[]> {
         let availableCount = 0;
         if(voucherSnapshot.exists()) {
           const vouchers = voucherSnapshot.val();
-          const packageDuration = packagesData[key].durationHours || 0;
-
           Object.values(vouchers).forEach((voucher: any) => {
+              // Only count vouchers that have never been used
               if (!voucher.usedAt) {
                   availableCount++;
-              } else {
-                  const usedDate = parseISO(voucher.usedAt);
-                  const expiryDate = addHours(usedDate, packageDuration);
-                  if (isAfter(new Date(), expiryDate)) {
-                      // It's expired, so it could be considered "available" if you resell expired vouchers
-                      // For now, we just count non-activated vouchers.
-                  } else {
-                     // It's active, not available
-                  }
               }
           });
         }
@@ -53,42 +43,41 @@ export async function getPackages(): Promise<Package[]> {
   }
 }
 
+export function getVoucherStatus(voucher: Voucher | { usedAt?: string }, durationHours: number): { status: 'Active' | 'Expired' | 'Available', expiry: string | null } {
+    if (voucher.usedAt) {
+        const usedDate = parseISO(voucher.usedAt);
+        const expiryDate = addHours(usedDate, durationHours);
+        if (isAfter(new Date(), expiryDate)) {
+            return { status: 'Expired', expiry: format(expiryDate, "dd MMM yyyy, HH:mm") };
+        } else {
+            return { status: 'Active', expiry: formatDistanceToNow(expiryDate, { addSuffix: true }) };
+        }
+    }
+    return { status: 'Available', expiry: null };
+}
+
 export async function getVouchersForPackage(packageSlug: string): Promise<Voucher[]> {
     const packageRef = ref(db, `packages/${packageSlug}`);
     const vouchersRef = ref(db, `vouchers/${packageSlug}`);
     try {
         const packageSnapshot = await get(packageRef);
-        const vouchersSnapshot = await get(vouchersRef);
-
         if (!packageSnapshot.exists()) {
             throw new Error(`Package with slug ${packageSlug} not found.`);
         }
         const packageData = packageSnapshot.val() as Omit<Package, 'slug'>;
-        const durationHours = packageData.durationHours || 0;
-
+        
+        const vouchersSnapshot = await get(vouchersRef);
         if (vouchersSnapshot.exists()) {
             const vouchersData = vouchersSnapshot.val();
-            const now = new Date();
 
             const voucherList = Object.keys(vouchersData).map(key => {
                 const dbVoucher = vouchersData[key];
-                let isUsed = false;
-                if (dbVoucher.usedAt) {
-                    const usedDate = parseISO(dbVoucher.usedAt);
-                    const expiryDate = addHours(usedDate, durationHours);
-                    if (isAfter(now, expiryDate)) {
-                        // Expired, so considered not "used" in the sense of being active
-                        isUsed = false; 
-                    } else {
-                        // Purchased and currently active
-                        isUsed = true;
-                    }
-                }
-
+                const { status } = getVoucherStatus(dbVoucher, packageData.durationHours);
+                
                 return {
                     id: key,
                     ...dbVoucher,
-                    used: isUsed // Dynamically calculated `used` status
+                    status: status, // Dynamic status
                 };
             });
             return voucherList as Voucher[];
@@ -98,6 +87,43 @@ export async function getVouchersForPackage(packageSlug: string): Promise<Vouche
         }
     } catch (error) {
         console.error(`Error fetching vouchers for ${packageSlug}:`, error);
+        return [];
+    }
+}
+
+// New function to get all vouchers with their package info
+export async function getAllVouchersWithPackageInfo(): Promise<(Voucher & { packageName: string, packageDurationHours: number })[]> {
+    const dbRef = ref(db);
+    try {
+        const packagesSnapshot = await get(child(dbRef, 'packages'));
+        const vouchersSnapshot = await get(child(dbRef, 'vouchers'));
+
+        if (!packagesSnapshot.exists() || !vouchersSnapshot.exists()) {
+            return [];
+        }
+
+        const packages = packagesSnapshot.val();
+        const allVouchersByPackage = vouchersSnapshot.val();
+        const result: (Voucher & { packageName: string, packageDurationHours: number })[] = [];
+
+        for (const packageSlug in allVouchersByPackage) {
+            if (packages[packageSlug]) {
+                const packageInfo = packages[packageSlug];
+                const vouchersForPackage = allVouchersByPackage[packageSlug];
+                for (const voucherId in vouchersForPackage) {
+                    result.push({
+                        id: voucherId,
+                        ...vouchersForPackage[voucherId],
+                        packageName: packageInfo.name,
+                        packageDurationHours: packageInfo.durationHours,
+                    });
+                }
+            }
+        }
+        return result;
+
+    } catch (error) {
+        console.error("Error fetching all vouchers:", error);
         return [];
     }
 }

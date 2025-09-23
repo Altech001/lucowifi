@@ -12,17 +12,28 @@ import { Package, Voucher } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
 import { ref, set, push, update, remove, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
+import { getVoucherStatus, getAllVouchersWithPackageInfo } from '@/lib/database-data';
 
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
 const nameSchema = z.string().min(2, { message: 'Name must be at least 2 characters.' });
 
+type PurchaseState = {
+    message: string;
+    success: boolean;
+    activeVoucherCode?: string;
+    activeVoucherExpiry?: string;
+    activeVoucherPackageName?: string;
+}
+
 export async function purchaseVoucherAction(
-  prevState: { message: string; success: boolean },
+  prevState: PurchaseState,
   formData: FormData
-): Promise<{ message: string; success: boolean }> {
+): Promise<PurchaseState> {
   const phoneNumber = formData.get('phoneNumber');
   const packageSlug = formData.get('packageSlug') as string;
+  const forcePurchase = formData.get('forcePurchase') === 'true';
+
 
   const validation = phoneSchema.safeParse(phoneNumber);
 
@@ -31,6 +42,30 @@ export async function purchaseVoucherAction(
   }
 
   const validatedPhoneNumber = validation.data;
+
+  // Check for existing active voucher, unless a force purchase is requested
+  if (!forcePurchase) {
+      const allVouchers = await getAllVouchersWithPackageInfo();
+      const existingActiveVoucher = allVouchers.find(v => {
+          if (v.purchasedBy === validatedPhoneNumber) {
+              const status = getVoucherStatus(v, v.packageDurationHours);
+              return status.status === 'Active';
+          }
+          return false;
+      });
+
+      if (existingActiveVoucher) {
+          return {
+              message: 'You already have an active voucher.',
+              success: false,
+              activeVoucherCode: existingActiveVoucher.code,
+              activeVoucherExpiry: getVoucherStatus(existingActiveVoucher, existingActiveVoucher.packageDurationHours).expiry,
+              activeVoucherPackageName: existingActiveVoucher.packageName,
+          }
+      }
+  }
+
+
   let voucherCode: string | null = null;
   let voucherId: string | null = null;
   let hasSucceeded = false;
@@ -72,7 +107,7 @@ export async function purchaseVoucherAction(
   }
 
   if (hasSucceeded && voucherCode) {
-    revalidatePath(`/admin`); 
+    revalidatePath(`/admin`);
     redirect(`/voucher/${voucherCode}`);
   }
 

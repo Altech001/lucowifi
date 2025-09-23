@@ -13,7 +13,8 @@ export type Package = {
 export type Voucher = {
   id: string;
   code: string;
-  used: boolean; // This will be calculated dynamically
+  status: 'Active' | 'Expired' | 'Available'; // This will be calculated dynamically
   createdAt: string;
   usedAt?: string;
+  purchasedBy?: string;
 };
