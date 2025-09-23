@@ -44,8 +44,8 @@ const processPaymentTool = ai.defineTool(
         const successUrl = 'https://www.google.com/search?q=success';
         const failedUrl = 'https://www.google.com/search?q=failed';
 
-        // Format amount to have two decimal places, e.g., "1000.00"
-        const formattedAmount = parseFloat(payload.amount).toFixed(2);
+        // Format amount to be a string of an integer.
+        const formattedAmount = parseInt(payload.amount, 10).toString();
 
         const body = {
             amount: formattedAmount,
@@ -64,38 +64,38 @@ const processPaymentTool = ai.defineTool(
                 body: JSON.stringify(body)
             });
             
+            const responseDataText = await response.text();
+
             if (!response.ok) {
-                const errorData = await response.text();
-                try {
-                    // Try to parse as JSON first
-                    const errorJson = JSON.parse(errorData);
-                     return {
-                        success: false,
-                        message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorJson.message || errorData}`,
-                    };
-                } catch {
-                     // If parsing fails, return the raw text
-                     return {
-                        success: false,
-                        message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorData}`,
-                    };
-                }
-            }
-
-            const responseData = await response.json();
-
-            // Check for both 'status' and 'success' keys in the response
-            if (responseData.status === 'success' || responseData.success || responseData.message === 'Payment successful') {
-                 return {
-                    success: true,
-                    message: responseData.message || 'Payment initiated successfully.',
-                    data: responseData,
-                };
-            } else {
                  return {
                     success: false,
-                    message: responseData.message || 'Payment provider indicated failure.',
-                    data: responseData,
+                    message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${responseDataText}`,
+                };
+            }
+
+            try {
+                const responseData = JSON.parse(responseDataText);
+                // Check for both 'status' and 'success' keys in the response
+                if (responseData.status === 'success' || responseData.success || responseData.message === 'Payment successful') {
+                     return {
+                        success: true,
+                        message: responseData.message || 'Payment initiated successfully.',
+                        data: responseData,
+                    };
+                } else {
+                     return {
+                        success: false,
+                        message: responseData.message || 'Payment provider indicated failure.',
+                        data: responseData,
+                    };
+                }
+            } catch (jsonError) {
+                // If parsing fails, it might be a non-JSON success response.
+                // We'll consider it a success if the HTTP status is OK.
+                 return {
+                    success: true,
+                    message: 'Payment initiated. Response was not in JSON format.',
+                    data: responseDataText,
                 };
             }
 
