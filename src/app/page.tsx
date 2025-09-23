@@ -21,13 +21,13 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {packages.map((pkg) => (
           <Link href={`/packages/${pkg.slug}`} key={pkg.slug} className="flex">
             <Card className="flex flex-col w-full transition-all duration-200 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50">
               <CardHeader className="p-4">
                 <CardTitle className="font-headline text-lg">{pkg.name}</CardTitle>
-                <CardDescription className="text-xs">{pkg.description}</CardDescription>
+                <CardDescription className="text-xs truncate">{pkg.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between p-4 pt-0">
                 <div>
