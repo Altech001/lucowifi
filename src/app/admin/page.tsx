@@ -1,39 +1,58 @@
 import Link from "next/link";
-import { ArrowRight, BarChart } from "lucide-react";
-
+import { PlusCircle, Ticket } from "lucide-react";
+import { packages } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
 export default function AdminDashboard() {
+  const voucherPackages = packages.filter(p => p.slug !== 'monthly-membership');
+
   return (
     <div>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-1">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              MikroTik Profile Analysis
-            </CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-headline">AI-Powered Package Suggestions</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Upload a CSV of user profiles to get optimal package recommendations.
-            </p>
-            <Button asChild className="mt-4">
-              <Link href="/admin/analyze">
-                Go to Analyzer
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold font-headline">Voucher Management</h1>
+          <p className="text-sm text-muted-foreground">
+            Select a package to upload and manage voucher codes.
+          </p>
+        </div>
+        <Button disabled>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add New Package
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {voucherPackages.map((pkg) => (
+          <Card key={pkg.slug}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-headline">{pkg.name}</CardTitle>
+                <Ticket className="h-5 w-5 text-primary" />
+              </div>
+              <CardDescription>UGX {pkg.price.toLocaleString()}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                {pkg.details.join(' • ')}
+              </p>
+            </CardContent>
+            <CardFooter>
+               <Button asChild className="w-full">
+                <Link href={`/admin/upload/${pkg.slug}`}>
+                  Manage Vouchers
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );

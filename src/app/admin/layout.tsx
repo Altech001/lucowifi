@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { BarChart, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BarChart, Home, Ticket } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +26,13 @@ export default function AdminLayout({
             <Home className="h-4 w-4 transition-all group-hover:scale-110" />
             <span className="sr-only">VoucherWave Home</span>
           </Link>
+           <Link
+            href="/admin"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <Ticket className="h-5 w-5" />
+            <span className="sr-only">Vouchers</span>
+          </Link>
           <Link
             href="/admin/analyze"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
@@ -38,19 +44,7 @@ export default function AdminLayout({
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Breadcrumb className="hidden md:flex">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/admin">Admin</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Analyze</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          {/* Breadcrumb can be dynamically populated by child pages */}
         </header>
         <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
       </div>

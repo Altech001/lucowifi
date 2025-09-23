@@ -162,3 +162,45 @@ export async function createMembershipAction(
     return { message: 'An unexpected error occurred during membership signup.', success: false };
   }
 }
+
+type UploadVoucherState = {
+  message: string;
+  success: boolean;
+  count?: number;
+}
+
+export async function uploadVouchersAction(
+    prevState: UploadVoucherState,
+    formData: FormData
+): Promise<UploadVoucherState> {
+    const file = formData.get('csvFile') as File | null;
+    const packageSlug = formData.get('packageSlug') as string | null;
+
+    if (!file || file.size === 0) {
+        return { message: 'Please upload a valid CSV file.', success: false };
+    }
+    if (!packageSlug) {
+        return { message: 'Package not specified.', success: false };
+    }
+
+    if (file.type !== 'text/csv') {
+        return { message: 'Invalid file type. Please upload a CSV file.', success: false };
+    }
+
+    const csvData = await file.text();
+    const rows = csvData.split(/\r\n|\n/).filter(row => row.trim() !== '');
+    const voucherCount = rows.length - 1; // Assuming a header row
+
+    // In a real application, you would parse the CSV and store the vouchers in a database,
+    // associating them with the `packageSlug`.
+    console.log(`Uploading ${voucherCount} vouchers for package: ${packageSlug}`);
+    console.log(csvData);
+
+    // Simulate a successful upload
+    return {
+        message: `${voucherCount} vouchers have been successfully uploaded and linked to the "${packageSlug}" package.`,
+        success: true,
+        count: voucherCount,
+    }
+
+}
