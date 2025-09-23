@@ -62,21 +62,6 @@ const sendWhatsappMessage = ai.defineTool(
   }
 );
 
-const whatsappVoucherPrompt = ai.definePrompt({
-  name: 'whatsappVoucherPrompt',
-  tools: [sendWhatsappMessage],
-  input: {schema: SendWhatsappVoucherInputSchema},
-  prompt: `You are in charge of sending a voucher code to a user's WhatsApp number.
-
-Your task is to send the following voucher code to the user's phone number.
-
-Voucher Code: {{{voucherCode}}}
-Phone Number: {{{phoneNumber}}}
-
-Use the sendWhatsappMessage tool to send the message "Your Luco WIFI voucher code is: {{{voucherCode}}}".
-`,
-});
-
 const sendWhatsappVoucherFlow = ai.defineFlow(
   {
     name: 'sendWhatsappVoucherFlow',
@@ -84,30 +69,13 @@ const sendWhatsappVoucherFlow = ai.defineFlow(
     outputSchema: SendWhatsappVoucherOutputSchema,
   },
   async input => {
-    const llmResponse = await whatsappVoucherPrompt(input);
+    // Directly call the tool to send the message.
+    // This simplifies the flow and removes the complex LLM interaction that was failing.
+    const result = await sendWhatsappMessage({
+      phoneNumber: input.phoneNumber,
+      message: `Your Luco WIFI voucher code is: ${input.voucherCode}`,
+    });
 
-    const toolRequests = llmResponse.toolRequests();
-    if (toolRequests.length === 0) {
-      return {
-        success: false,
-        message: 'The model did not request to send a message.',
-      };
-    }
-    
-    // We are only expecting one tool request from the prompt.
-    const toolRequest = toolRequests[0];
-    const toolResponse = await toolRequest.run();
-
-    if (toolResponse.success) {
-      return {
-        success: true,
-        message: toolResponse.message,
-      };
-    } else {
-       return {
-        success: false,
-        message: toolResponse.message || 'Failed to send voucher code via the tool.',
-      };
-    }
+    return result;
   }
 );
