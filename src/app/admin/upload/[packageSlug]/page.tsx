@@ -1,7 +1,5 @@
 
-'use client';
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { getPackages } from "@/lib/firestore-data";
 import { UploadForm } from "./upload-form";
 import {
@@ -12,36 +10,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import type { Package } from "@/lib/definitions";
 
 
-export default function UploadPage() {
-    const pathname = usePathname();
-    const packageSlug = pathname.split('/').pop() || '';
-    const [selectedPackage, setSelectedPackage] = useState<Package | undefined>(undefined);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchPackage() {
-            if (packageSlug) {
-                const pkgs = await getPackages();
-                const foundPackage = pkgs.find(p => p.slug === packageSlug);
-                setSelectedPackage(foundPackage);
-            }
-            setLoading(false);
-        }
-        fetchPackage();
-    }, [packageSlug]);
-
-    if (loading) {
-         return (
-            <div className="text-center">
-                <p>Loading package details...</p>
-            </div>
-        )
-    }
+export default async function UploadPage({ params }: { params: { packageSlug: string } }) {
+    const { packageSlug } = params;
+    const packages = await getPackages();
+    const selectedPackage = packages.find(p => p.slug === packageSlug);
 
     if (!selectedPackage) {
         return (
