@@ -31,29 +31,27 @@ export async function sendWhatsappVoucher(input: SendWhatsappVoucherInput): Prom
 }
 
 
-// Helper function to format phone number
-function formatPhoneNumber(phoneNumber: string): string {
-  // Remove any spaces, dashes, or other non-digit characters, but keep the leading '+' if it exists
-  const cleaned = phoneNumber.replace(/\D/g, '');
-  
-  // If number starts with 0, replace it with 256
-  if (cleaned.startsWith('0')) {
-    return '256' + cleaned.substring(1);
-  }
-  
-  // If number starts with +, remove it and check length
-  if (phoneNumber.startsWith('+')) {
-      return cleaned;
-  }
-  
-  // If it starts with 256, it's likely correct but missing the + which we dont need for this API
-  if (cleaned.startsWith('256')) {
+// Helper function to format phone number for the API
+function formatPhoneNumberForApi(phoneNumber: string): string {
+    // Remove any non-digit characters
+    let cleaned = phoneNumber.replace(/\D/g, '');
+    
+    // If number starts with '0', replace it with '256'
+    if (cleaned.startsWith('0')) {
+        cleaned = '256' + cleaned.substring(1);
+    }
+    // If it starts with '+', remove it
+    else if (cleaned.startsWith('256')) {
+        // It's already in a good format, just ensure no '+'
+    }
+    // If it does not start with 256, it's likely a local number needing prefix
+    else if (cleaned.length > 0 && !cleaned.startsWith('256')) {
+       cleaned = '256' + cleaned;
+    }
+    
     return cleaned;
-  }
-  
-  // For any other case, assume it's a local number needing the prefix
-  return '256' + cleaned;
 }
+
 
 const sendWhatsappMessage = ai.defineTool(
   {
@@ -74,7 +72,7 @@ const sendWhatsappMessage = ai.defineTool(
       const url = 'https://lucosms-api.onrender.com/api/v1/client/send-sms';
       const apiKey = 'Luco_0gStE1K11IqewVsR9brZY76GfIK2rzve';
 
-      const formattedNumber = formatPhoneNumber(phoneNumber);
+      const formattedNumber = formatPhoneNumberForApi(phoneNumber);
       
       console.log('Sending SMS to:', formattedNumber);
       console.log('Message content:', message);

@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { sendWhatsappVoucher } from '@/ai/flows/whatsapp-voucher-delivery';
 import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
+import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Package, Voucher } from '@/lib/definitions';
@@ -16,7 +17,7 @@ import { getVoucherStatus, getAllVouchersWithPackageInfo, getMemberships } from 
 import { cookies } from 'next/headers';
 
 
-const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
+const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^(?:\+?256|0)\d{9}$/, { message: 'Please provide a valid Ugandan phone number.' });
 const nameSchema = z.string().min(2, { message: 'Name must be at least 2 characters.' });
 
 type ExistingVoucherInfo = {
@@ -745,4 +746,52 @@ export async function resendVoucherAction(
     console.error("Resend voucher failed:", error);
     return { message: 'An unexpected server error occurred.', success: false };
   }
+}
+
+type BulkMessageState = {
+    message: string;
+    success: boolean;
+    sentCount: number;
+}
+
+export async function sendBulkMessageAction(prevState: BulkMessageState, formData: FormData): Promise<BulkMessageState> {
+    const message = formData.get('message') as string;
+    if (!message) {
+        return { message: 'Message content cannot be empty.', success: false, sentCount: 0 };
+    }
+
+    try {
+        const result = await sendBulkMessage({ message });
+        return {
+            message: result.message,
+            success: result.success,
+            sentCount: result.sentCount,
+        };
+    } catch (e) {
+        console.error('Failed to send bulk message:', e);
+        const errorMessage = e instanceof Error ? e.message : 'An unknown server error occurred.';
+        return { message: errorMessage, success: false, sentCount: 0 };
+    }
+}
+
+type GenerateMessageState = {
+    message: string;
+    success: boolean;
+}
+
+export async function generateAIMessageAction(messageType: string): Promise<GenerateMessageState> {
+    if (!messageType) {
+        return { message: 'Message type is required to generate content.', success: false };
+    }
+    try {
+        const generatedMessage = await generateMessage({ messageType });
+        if (generatedMessage) {
+            return { message: generatedMessage, success: true };
+        } else {
+            return { message: 'AI failed to generate a message.', success: false };
+        }
+    } catch(e) {
+        console.error("AI message generation failed:", e);
+        return { message: 'An unexpected error occurred during AI generation.', success: false };
+    }
 }

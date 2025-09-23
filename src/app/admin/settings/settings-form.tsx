@@ -1,7 +1,7 @@
 
 'use client';
-import { useActionState, useEffect, useRef } from 'react';
-import { addPromotionAction, deletePromotionAction, exportUserPhonesAction } from '@/app/actions';
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
+import { addPromotionAction, deletePromotionAction, exportUserPhonesAction, sendBulkMessageAction, generateAIMessageAction } from '@/app/actions';
 import type { Package, Promotion } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,13 +10,19 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/submit-button';
-import { Gift, Trash2, Download, FileDown, Phone } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles, Loader2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format, parseISO } from 'date-fns';
 
-const initialState = {
+const initialPromoState = {
     message: '',
     success: false
+};
+
+const initialBulkState = {
+    message: '',
+    success: false,
+    sentCount: 0
 };
 
 type SettingsFormProps = {
@@ -26,8 +32,14 @@ type SettingsFormProps = {
 
 export function SettingsForm({ packages, promotions }: SettingsFormProps) {
     const { toast } = useToast();
-    const [addState, addFormAction] = useActionState(addPromotionAction, initialState);
+    const [addState, addFormAction] = useActionState(addPromotionAction, initialPromoState);
+    const [bulkState, bulkFormAction] = useActionState(sendBulkMessageAction, initialBulkState);
+    
     const addFormRef = useRef<HTMLFormElement>(null);
+    const bulkFormRef = useRef<HTMLFormElement>(null);
+
+    const [isGenerating, startGenerating] = useTransition();
+    const [messageContent, setMessageContent] = useState('');
 
     useEffect(() => {
         if(addState.message) {
@@ -41,6 +53,21 @@ export function SettingsForm({ packages, promotions }: SettingsFormProps) {
             }
         }
     }, [addState, toast]);
+
+    useEffect(() => {
+        if(bulkState.message) {
+            toast({
+                variant: bulkState.success ? 'default' : 'destructive',
+                title: bulkState.success ? 'Bulk Send' : 'Error',
+                description: bulkState.message
+            });
+            if (bulkState.success) {
+                bulkFormRef.current?.reset();
+                setMessageContent('');
+            }
+        }
+    }, [bulkState, toast]);
+
 
     const handleExport = async () => {
         const result = await exportUserPhonesAction();
@@ -59,9 +86,25 @@ export function SettingsForm({ packages, promotions }: SettingsFormProps) {
         }
     };
 
+    const handleGenerateMessage = () => {
+        const messageType = (bulkFormRef.current?.elements.namedItem('messageType') as HTMLInputElement)?.value;
+        if (!messageType) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Please provide a message topic to generate content.' });
+            return;
+        }
+        startGenerating(async () => {
+            const result = await generateAIMessageAction(messageType);
+            if (result.success && result.message) {
+                setMessageContent(result.message);
+                toast({ title: 'Success', description: 'AI message generated.' });
+            } else {
+                toast({ variant: 'destructive', title: 'Generation Failed', description: result.message });
+            }
+        });
+    }
 
     return (
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2">
             <div className="space-y-8">
                 {/* Promotions Card */}
                 <Card>
@@ -133,6 +176,39 @@ export function SettingsForm({ packages, promotions }: SettingsFormProps) {
                 </Card>
             </div>
             <div className="space-y-8">
+                 <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <MessageSquare className="h-6 w-6" />
+                            <CardTitle>Send Bulk Message</CardTitle>
+                        </div>
+                        <CardDescription>Send a custom SMS to all users who have purchased a voucher or signed up.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form ref={bulkFormRef} action={bulkFormAction} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="message">Message Content</Label>
+                                <Textarea id="message" name="message" required placeholder="Your message here..." value={messageContent} onChange={e => setMessageContent(e.target.value)} rows={5}/>
+                            </div>
+                            <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
+                                <Label htmlFor="messageType">AI Message Generation</Label>
+                                <div className="flex gap-2">
+                                    <Input id="messageType" name="messageType" placeholder="e.g., Weekend promotion, Network maintenance" />
+                                    <Button type="button" variant="outline" onClick={handleGenerateMessage} disabled={isGenerating}>
+                                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                        Generate
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Let AI help you write the perfect message.</p>
+                            </div>
+                             <SubmitButton className="w-full">
+                                <Send className="mr-2 h-4 w-4" />
+                                Send Message to All Users
+                            </SubmitButton>
+                        </form>
+                    </CardContent>
+                </Card>
+
                  {/* Data Export Card */}
                 <Card>
                     <CardHeader>
