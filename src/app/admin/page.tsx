@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { PlusCircle, Ticket, Eye, Trash2, Database, Clock } from "lucide-react";
+import { PlusCircle, Ticket, Eye, Trash2, Database, Clock, CheckCircle } from "lucide-react";
 import { getPackages } from "@/lib/database-data";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
                 <div>
                   <CardTitle className="text-lg font-headline">{pkg.name}</CardTitle>
                   <CardDescription>
-                    {pkg.price.toLocaleString()}{pkg.slug === 'monthly-membership' ? ' / month' : ''}
+                    {pkg.price.toLocaleString()}{pkg.slug === 'monthly-membership' ? ' / month' : ' UGX'}
                     </CardDescription>
                 </div>
                  <AlertDialog>
@@ -82,9 +82,14 @@ export default async function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
-              <p className="text-xs text-muted-foreground">
-                {pkg.details.join(' • ')}
-              </p>
+              <ul className="space-y-2 text-xs text-muted-foreground w-full">
+                  {pkg.details.map((detail, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                      <span className="truncate">{detail}</span>
+                    </li>
+                  ))}
+                </ul>
                {pkg.slug !== 'monthly-membership' && (
                 <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground border-t pt-4">
                     <div className="flex items-center gap-2">

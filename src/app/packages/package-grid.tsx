@@ -87,7 +87,7 @@ export function PackageGrid({ packages }: { packages: Package[] }) {
               </CardContent>
               <CardFooter className="p-4 bg-muted/50 border-t mt-auto">
                 <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground w-full">
-                  {pkg.details.slice(0, 2).map((detail, index) => (
+                  {pkg.details.map((detail, index) => (
                     <li key={index} className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-primary shrink-0" />
                       <span className="truncate">{detail}</span>
