@@ -11,19 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-const ProcessPaymentInputSchema = z.object({
-  amount: z.string().describe('The amount to be paid.'),
-  number: z.string().describe('The phone number of the payer.'),
-});
-export type ProcessPaymentInput = z.infer<typeof ProcessPaymentInputSchema>;
-
-const ProcessPaymentOutputSchema = z.object({
-  success: z.boolean().describe('Whether the payment was successfully initiated.'),
-  message: z.string().describe('The message from the payment provider.'),
-  data: z.any().optional().describe('Any additional data from the provider.'),
-});
-export type ProcessPaymentOutput = z.infer<typeof ProcessPaymentOutputSchema>;
+import type { ProcessPaymentInput, ProcessPaymentOutput } from '@/app/actions';
 
 
 export async function processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentOutput> {
@@ -39,14 +27,19 @@ const processPaymentTool = ai.defineTool(
             number: z.string(),
             refer: z.string(),
         }),
-        outputSchema: ProcessPaymentOutputSchema,
+        outputSchema: z.custom<ProcessPaymentOutput>(),
     },
     async (payload) => {
         const url = 'https://hive-sooty-eight.vercel.app/process_payment';
         
-        // IMPORTANT: Replace with your actual username and password, preferably from environment variables.
-        const username = 'YOURUSERNAME'; 
-        const password = 'YOURPASSWORD';
+        const username = process.env.PAYMENT_API_USERNAME;
+        const password = process.env.PAYMENT_API_PASSWORD;
+
+        if (!username || !password) {
+            const message = 'Payment provider credentials are not configured in environment variables.';
+            console.error(message);
+            return { success: false, message };
+        }
 
         // IMPORTANT: Replace with your actual success and failure URLs.
         const successUrl = 'https://your_domain.com/payment/success';
@@ -110,8 +103,8 @@ const processPaymentTool = ai.defineTool(
 const processPaymentFlow = ai.defineFlow(
   {
     name: 'processPaymentFlow',
-    inputSchema: ProcessPaymentInputSchema,
-    outputSchema: ProcessPaymentOutputSchema,
+    inputSchema: z.custom<ProcessPaymentInput>(),
+    outputSchema: z.custom<ProcessPaymentOutput>(),
   },
   async (input) => {
     // Generate a unique reference for the transaction
@@ -122,3 +115,4 @@ const processPaymentFlow = ai.defineFlow(
     return result;
   }
 );
+
