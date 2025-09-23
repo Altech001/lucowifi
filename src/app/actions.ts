@@ -6,6 +6,10 @@ import { redirect } from 'next/navigation';
 import { sendWhatsappVoucher } from '@/ai/flows/whatsapp-voucher-delivery';
 import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { Package } from '@/lib/definitions';
+
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
 const nameSchema = z.string().min(2, { message: 'Name must be at least 2 characters.' });
@@ -189,7 +193,7 @@ export async function uploadVouchersAction(
 
     const csvData = await file.text();
     const rows = csvData.split(/\r\n|\n/).filter(row => row.trim() !== '');
-    const voucherCount = rows.length - 1; // Assuming a header row
+    const voucherCount = rows.length > 1 ? rows.length -1 : rows.length; // Assume header row
 
     // In a real application, you would parse the CSV and store the vouchers in a database,
     // associating them with the `packageSlug`.
@@ -203,4 +207,74 @@ export async function uploadVouchersAction(
         count: voucherCount,
     }
 
+}
+
+type CreatePackageState = {
+    message: string;
+    success: boolean;
+}
+
+// Helper to generate a slug from a string
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/[^\w-]+/g, '');
+};
+
+
+export async function createPackageAction(prevState: CreatePackageState, formData: FormData): Promise<CreatePackageState> {
+    const name = formData.get('name') as string;
+    const price = formData.get('price') as string;
+    const description = formData.get('description') as string;
+    const details = formData.get('details') as string;
+
+    if (!name || !price || !description || !details) {
+        return { message: 'All fields are required.', success: false };
+    }
+
+    const newPackage: Omit<Package, 'imageId'> = {
+        slug: generateSlug(name),
+        name,
+        price: parseInt(price, 10),
+        description,
+        details: details.split('\n').map(d => d.trim()).filter(d => d),
+    };
+    
+    // In a real app, you would probably want to assign a meaningful imageId
+    const newPackageWithImage: Package = {
+        ...newPackage,
+        imageId: 'gold-package'
+    };
+
+    try {
+        const filePath = path.join(process.cwd(), 'src', 'lib', 'data.ts');
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+
+        // This is a simplified way to append to the array.
+        // It assumes a specific format and could be brittle.
+        const newPackageString = `,\n  {\n    slug: "${newPackageWithImage.slug}",\n    name: "${newPackageWithImage.name}",\n    price: ${newPackageWithImage.price},\n    description: "${newPackageWithImage.description}",\n    details: [${newPackageWithImage.details.map(d => `"${d}"`).join(', ')}],\n    imageId: "${newPackageWithImage.imageId}",\n  }`;
+
+        const closingBracketIndex = fileContent.lastIndexOf('];');
+
+        if (closingBracketIndex === -1) {
+            throw new Error("Could not find the closing bracket of the packages array.");
+        }
+
+        const updatedFileContent = 
+            fileContent.substring(0, closingBracketIndex) + 
+            newPackageString + 
+            fileContent.substring(closingBracketIndex);
+
+        await fs.writeFile(filePath, updatedFileContent, 'utf-8');
+        
+    } catch (error) {
+        console.error("Failed to write to data.ts", error);
+        return { message: 'Failed to save the new package.', success: false };
+    }
+    
+    // Invalidate the cache for the admin page to show the new package
+    // For this to work well, you might need to use revalidatePath from 'next/cache'
+    // but for now, a redirect will force a fresh load.
+    redirect('/admin');
 }

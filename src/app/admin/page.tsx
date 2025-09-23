@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { PlusCircle, Ticket } from "lucide-react";
 import { packages } from "@/lib/data";
@@ -23,9 +24,11 @@ export default function AdminDashboard() {
             Select a package to upload and manage voucher codes.
           </p>
         </div>
-        <Button disabled>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Package
+        <Button asChild>
+            <Link href="/admin/packages/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add New Package
+            </Link>
         </Button>
       </div>
 
