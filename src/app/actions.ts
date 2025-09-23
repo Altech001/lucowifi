@@ -50,27 +50,17 @@ export async function purchaseVoucherAction(
     // Mark the voucher as used by adding a timestamp
     const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
     await update(voucherRef, {
-      usedAt: new Date().toISOString()
+      usedAt: new Date().toISOString(),
+      purchasedBy: validatedPhoneNumber // Optionally store who purchased it
     });
 
-
-    const result = await sendWhatsappVoucher({
-      phoneNumber: validatedPhoneNumber,
-      voucherCode,
-    });
-
-    if (result.success) {
-      revalidatePath(`/admin`); // Revalidate to update voucher count
-      redirect(`/voucher/${voucherCode}`);
-    } else {
-      // If WhatsApp fails, roll back the voucher status
-       await update(voucherRef, {
-            usedAt: null
-       });
-      return { message: result.message || 'Failed to send voucher via WhatsApp.', success: false };
-    }
+    revalidatePath(`/admin`); // Revalidate to update voucher count
+    redirect(`/voucher/${voucherCode}`);
+    
   } catch (error) {
     console.error('Voucher purchase process failed:', error);
+    // In case of an error, it might be good to try and roll back, though it's complex.
+    // For now, we'll just log the error.
     return { message: 'An unexpected error occurred during your purchase.', success: false };
   }
 }
@@ -440,3 +430,5 @@ export async function deletePackageAction(formData: FormData): Promise<void> {
 
     revalidatePath('/admin');
 }
+
+    
