@@ -20,7 +20,7 @@ export function LoginForm() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (state.message) {
+    if (state.message && !state.success) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',

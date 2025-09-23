@@ -6,12 +6,12 @@ export function middleware(request: NextRequest) {
   const cookie = request.cookies.get('luco-admin-auth');
   const { pathname } = request.nextUrl;
 
-  // Allow requests to the login page to proceed
-  if (pathname.startsWith('/login')) {
-    return NextResponse.next();
+  // If user is trying to access /login page but is already logged in, redirect to admin
+  if (cookie && pathname === '/login') {
+    return NextResponse.redirect(new URL('/admin', request.url));
   }
-
-  // If on an admin path and no auth cookie, redirect to login
+  
+  // If accessing a protected admin path without a cookie, redirect to login
   if (pathname.startsWith('/admin') && !cookie) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
