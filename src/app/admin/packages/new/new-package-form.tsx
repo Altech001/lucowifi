@@ -2,6 +2,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { createPackageAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,17 +21,26 @@ const initialState = {
 export function NewPackageForm() {
     const [state, formAction] = useActionState(createPackageAction, initialState);
     const { toast } = useToast();
+    const router = useRouter();
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
-        if (state.message && !state.success) {
-            toast({
-                variant: "destructive",
-                title: "Failed to Create Package",
-                description: state.message,
-            });
+        if (state.message) {
+             if (state.success) {
+                toast({
+                    title: "Success",
+                    description: state.message,
+                });
+                router.push('/admin');
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Failed to Create Package",
+                    description: state.message,
+                });
+            }
         }
-    }, [state, toast]);
+    }, [state, toast, router]);
 
 
     return (
