@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { BarChart, Home, Ticket, Users, UserCog, LogOut, Settings, Package } from "lucide-react";
+import { BarChart, Home, Ticket, Users, UserCog, LogOut, Settings, Package, PlusCircle } from "lucide-react";
 import { logout } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 
@@ -68,8 +68,19 @@ export default function AdminLayout({
           </div>
       </div>
       <div className="flex flex-col">
-         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-            {/* Can be used for mobile nav toggle or breadcrumbs */}
+         <header className="flex h-14 items-center justify-between gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <div>
+              <h1 className="text-xl font-semibold font-headline">Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                Manage packages, vouchers, and members.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/admin/packages/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add New Package
+              </Link>
+            </Button>
          </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {children}
