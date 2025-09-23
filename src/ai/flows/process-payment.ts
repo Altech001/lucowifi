@@ -86,7 +86,8 @@ const processPaymentTool = ai.defineTool(
                         success: true,
                         message: responseData.message || 'Payment initiated successfully.',
                         data: { 
-                            ...responseData, 
+                            ...responseData,
+                            amount: formattedAmount,
                             TransactionStatus: transactionStatus,
                             TransactionReference: transactionReference,
                         },
