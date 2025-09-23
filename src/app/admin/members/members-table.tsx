@@ -133,13 +133,14 @@ export function MembersTable({ members }: MembersTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isPending ? (
+              {isPending && (
                 <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                     </TableCell>
                 </TableRow>
-              ) : filteredMembers.length > 0 ? (
+              )}
+              {!isPending && filteredMembers.length > 0 ? (
                 filteredMembers.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell className="font-medium whitespace-nowrap">{member.name}</TableCell>
@@ -221,11 +222,13 @@ export function MembersTable({ members }: MembersTableProps) {
                   </TableRow>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No members found.
-                  </TableCell>
-                </TableRow>
+                 !isPending && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center">
+                        No members found.
+                      </TableCell>
+                    </TableRow>
+                 )
               )}
             </TableBody>
           </Table>
