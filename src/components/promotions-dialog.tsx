@@ -72,3 +72,4 @@ export function PromotionsDialog({ promotions }: PromotionsDialogProps) {
     </Dialog>
   );
 }
+
