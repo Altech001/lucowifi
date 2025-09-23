@@ -11,8 +11,8 @@ import { CheckCircle } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="container mx-auto px-4 py-8 sm:py-12">
-      <header className="text-center mb-10">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      <header className="text-center mb-8">
         <h1 className="text-4xl sm:text-5xl font-bold font-headline text-primary tracking-tight">
           Luco WIFI
         </h1>
