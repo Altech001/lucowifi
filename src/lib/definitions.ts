@@ -14,4 +14,5 @@ export type Voucher = {
   code: string;
   used: boolean;
   createdAt: string;
+  usedAt?: string;
 };

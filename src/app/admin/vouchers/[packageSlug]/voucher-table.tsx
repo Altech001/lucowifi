@@ -43,7 +43,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SubmitButton } from '@/components/submit-button';
 import { Search, PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 type VoucherTableProps = {
   vouchers: Voucher[];
@@ -55,12 +55,19 @@ const initialState = {
     success: false,
 };
 
-function FormattedDate({ dateString }: { dateString: string }) {
+function FormattedDate({ dateString }: { dateString: string | undefined }) {
     const [formattedDate, setFormattedDate] = useState<string | null>(null);
 
     useEffect(() => {
-        setFormattedDate(format(new Date(dateString), "dd MMM yyyy, HH:mm"));
+        if (dateString) {
+            // Using parseISO to correctly handle the ISO string
+            setFormattedDate(format(parseISO(dateString), "dd MMM yyyy, HH:mm"));
+        } else {
+            setFormattedDate(null);
+        }
     }, [dateString]);
+    
+    if (!dateString) return null;
 
     return <>{formattedDate || '...'}</>;
 }
@@ -170,6 +177,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                 <TableHead>Voucher Code</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created At</TableHead>
+                <TableHead>Used At</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -185,6 +193,9 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                     </TableCell>
                     <TableCell>
                         <FormattedDate dateString={voucher.createdAt} />
+                    </TableCell>
+                    <TableCell>
+                        <FormattedDate dateString={voucher.usedAt} />
                     </TableCell>
                     <TableCell className="text-right">
                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(voucher)}>
@@ -222,7 +233,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No vouchers found.
                   </TableCell>
                 </TableRow>
