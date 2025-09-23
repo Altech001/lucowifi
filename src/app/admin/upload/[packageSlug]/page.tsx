@@ -16,7 +16,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 
 export default function UploadPage({ params }: { params: { packageSlug: string } }) {
-    const { packageSlug } = params;
+    const pathname = usePathname();
+    const packageSlug = pathname.split('/').pop();
     const selectedPackage = packages.find(p => p.slug === packageSlug);
 
     if (!selectedPackage) {
