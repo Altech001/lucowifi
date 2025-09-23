@@ -10,7 +10,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Package, Voucher } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
-import { ref, set, push, update, remove } from 'firebase/database';
+import { ref, set, push, update, remove, get } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 
 

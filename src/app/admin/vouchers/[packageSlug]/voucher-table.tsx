@@ -1,9 +1,8 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useActionState } from 'react';
 import type { Voucher } from '@/lib/definitions';
-import { useFormState } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { addVoucherAction, updateVoucherAction, deleteVoucherAction } from '@/app/actions';
 
@@ -64,9 +63,9 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
   
   const { toast } = useToast();
 
-  const [addState, addFormAction] = useFormState(addVoucherAction, initialState);
-  const [updateState, updateFormAction] = useFormState(updateVoucherAction, initialState);
-  const [deleteState, deleteFormAction] = useFormState(deleteVoucherAction, initialState);
+  const [addState, addFormAction] = useActionState(addVoucherAction, initialState);
+  const [updateState, updateFormAction] = useActionState(updateVoucherAction, initialState);
+  const [deleteState, deleteFormAction] = useActionState(deleteVoucherAction, initialState);
   
   const addFormRef = useRef<HTMLFormElement>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
@@ -80,14 +79,20 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
   useEffect(() => {
     if(addState.message) {
         toast({ variant: addState.success ? 'default' : 'destructive', title: addState.success ? 'Success' : 'Error', description: addState.message });
-        if(addState.success) setIsAddDialogOpen(false);
+        if(addState.success) {
+            setIsAddDialogOpen(false);
+            addFormRef.current?.reset();
+        }
     }
   }, [addState, toast]);
 
    useEffect(() => {
     if(updateState.message) {
         toast({ variant: updateState.success ? 'default' : 'destructive', title: updateState.success ? 'Success' : 'Error', description: updateState.message });
-        if(updateState.success) setIsEditDialogOpen(false);
+        if(updateState.success) {
+            setIsEditDialogOpen(false);
+            editFormRef.current?.reset();
+        };
     }
   }, [updateState, toast]);
 
