@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SubmitButton } from '@/components/submit-button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserPlus, KeyRound, User, Lock, PartyPopper, Home, ArrowLeft, ArrowRight, FileCheck, Eye, EyeOff } from 'lucide-react';
@@ -111,7 +111,7 @@ export function MembershipForm() {
   }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-6" encType="multipart/form-data">
+    <form ref={formRef} action={formAction} className="space-y-6">
        {/* Hidden inputs to carry over data from previous steps */}
        {Array.from(formData.entries()).map(([key, value]) => {
           if (value instanceof File) {
