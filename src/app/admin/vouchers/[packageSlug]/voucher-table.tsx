@@ -190,8 +190,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg w-full">
-        <div className="relative w-full overflow-auto max-h-[60vh]">
+      <div className="border rounded-lg w-full max-h-[60vh] overflow-y-auto">
           <Table>
             <TableHeader className="sticky top-0 bg-muted">
               <TableRow>
@@ -257,7 +256,6 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
               )}
             </TableBody>
           </Table>
-        </div>
       </div>
        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent>

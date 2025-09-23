@@ -97,8 +97,7 @@ export function MembersTable({ members }: MembersTableProps) {
         </div>
       </div>
 
-      <div className="border rounded-lg w-full">
-        <div className="relative w-full overflow-auto max-h-[70vh]">
+      <div className="border rounded-lg w-full max-h-[70vh] overflow-y-auto">
           <Table>
             <TableHeader className="sticky top-0 bg-muted">
               <TableRow>
@@ -120,7 +119,7 @@ export function MembersTable({ members }: MembersTableProps) {
               ) : filteredMembers.length > 0 ? (
                 filteredMembers.map((member) => (
                   <TableRow key={member.id}>
-                    <TableCell className="font-medium">{member.name}</TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">{member.name}</TableCell>
                     <TableCell>
                         <div className="flex flex-col">
                             <span className="text-sm">{member.phoneNumber}</span>
@@ -128,7 +127,7 @@ export function MembersTable({ members }: MembersTableProps) {
                     </TableCell>
                     <TableCell>{member.username}</TableCell>
                     <TableCell>{getStatusBadge(member.status)}</TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {format(parseISO(member.createdAt), 'dd MMM yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
@@ -207,7 +206,6 @@ export function MembersTable({ members }: MembersTableProps) {
               )}
             </TableBody>
           </Table>
-        </div>
       </div>
     </div>
   );
