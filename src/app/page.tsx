@@ -24,13 +24,13 @@ export default function Home() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {packages.map((pkg) => (
           <Link href={`/packages/${pkg.slug}`} key={pkg.slug} className="flex">
-            <Card className="flex flex-col w-full transition-all duration-200 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50">
-              <CardHeader className="p-4">
+            <Card className="flex flex-col w-full transition-all duration-200 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50 aspect-square">
+              <CardHeader className="p-4 text-center">
                 <CardTitle className="font-headline text-lg">{pkg.name}</CardTitle>
                 <CardDescription className="text-xs truncate">{pkg.description}</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between p-4 pt-0">
-                <div>
+              <CardContent className="flex-1 flex flex-col justify-center items-center p-4 pt-0">
+                <div className="text-center">
                   <div className="mb-3">
                     <span className="text-2xl font-bold font-headline">UGX {pkg.price}</span>
                     {pkg.slug.includes('month') && <span className="text-muted-foreground text-xs"> / month</span>}
