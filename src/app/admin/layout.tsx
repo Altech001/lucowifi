@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { BarChart, Home, Ticket, Users, UserCog, LogOut, Settings } from "lucide-react";
+import { BarChart, Home, Ticket, Users, UserCog, LogOut, Settings, Package } from "lucide-react";
 import { logout } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 
@@ -18,8 +18,8 @@ export default function AdminLayout({
             href="/admin"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
-            <Home className="h-4 w-4 transition-all group-hover:scale-110" />
-            <span className="sr-only">VoucherWave Home</span>
+            <Package className="h-4 w-4 transition-all group-hover:scale-110" />
+            <span className="sr-only">Luco WIFI</span>
           </Link>
            <Link
             href="/admin"
