@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
 import { Button } from '@/components/ui/button';
-import { Package } from 'lucide-react';
+import { LayoutDashboard, Package } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function Header() {
   return (
@@ -14,10 +20,22 @@ export function Header() {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
-            <Button variant="ghost" asChild>
-                <Link href="/admin">Admin Panel</Link>
-            </Button>
-            <ThemeToggleButton />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/admin">
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span className="sr-only">Admin Panel</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Admin Panel</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <ThemeToggleButton />
         </div>
       </div>
     </header>
