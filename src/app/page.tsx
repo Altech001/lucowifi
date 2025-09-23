@@ -21,24 +21,24 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {packages.map((pkg) => (
           <Link href={`/packages/${pkg.slug}`} key={pkg.slug} className="flex">
-            <Card className="flex flex-col w-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-              <CardHeader>
-                <CardTitle className="font-headline text-xl">{pkg.name}</CardTitle>
-                <CardDescription className="text-sm">{pkg.description}</CardDescription>
+            <Card className="flex flex-col w-full transition-all duration-200 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50">
+              <CardHeader className="p-4">
+                <CardTitle className="font-headline text-lg">{pkg.name}</CardTitle>
+                <CardDescription className="text-xs">{pkg.description}</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
+              <CardContent className="flex-1 flex flex-col justify-between p-4 pt-0">
                 <div>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold font-headline">UGX {pkg.price}</span>
+                  <div className="mb-3">
+                    <span className="text-2xl font-bold font-headline">UGX {pkg.price}</span>
                     {pkg.slug.includes('month') && <span className="text-muted-foreground text-xs"> / month</span>}
                   </div>
-                  <ul className="space-y-2 text-xs text-muted-foreground">
+                  <ul className="space-y-1.5 text-xs text-muted-foreground">
                     {pkg.details.map((detail, index) => (
                       <li key={index} className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary" />
+                        <CheckCircle className="h-3 w-3 text-primary" />
                         <span>{detail}</span>
                       </li>
                     ))}
