@@ -50,11 +50,11 @@ const processPaymentTool = ai.defineTool(
         const body = {
             amount: formattedAmount,
             number: payload.number,
-            refer: payload.ref, // Corrected from 'ref' to 'refer'
+            refer: payload.ref,
             username: payload.username,
             password: payload.password,
-            success: successUrl, // Corrected from 'success-re-url'
-            failed: failedUrl, // Corrected from 'failed-re-url'
+            'success-re-url': successUrl,
+            'failed-re-url': failedUrl,
         };
 
         try {
@@ -85,7 +85,7 @@ const processPaymentTool = ai.defineTool(
             const responseData = await response.json();
 
             // Check for both 'status' and 'success' keys in the response
-            if (responseData.status === 'success' || responseData.success) {
+            if (responseData.status === 'success' || responseData.success || responseData.message === 'Payment successful') {
                  return {
                     success: true,
                     message: responseData.message || 'Payment initiated successfully.',
