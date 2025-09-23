@@ -9,11 +9,19 @@ export async function getPackages(): Promise<Package[]> {
     const snapshot = await get(child(dbRef, 'packages'));
     if (snapshot.exists()) {
       const packagesData = snapshot.val();
-      // Convert the object of packages into an array
-      const packageList = Object.keys(packagesData).map(key => ({
-        slug: key,
-        ...packagesData[key]
-      }));
+      
+      const packageListPromises = Object.keys(packagesData).map(async (key) => {
+        const voucherCountSnapshot = await get(child(dbRef, `vouchers/${key}`));
+        const voucherCount = voucherCountSnapshot.exists() ? voucherCountSnapshot.size : 0;
+        
+        return {
+          slug: key,
+          ...packagesData[key],
+          voucherCount: voucherCount,
+        };
+      });
+
+      const packageList = await Promise.all(packageListPromises);
       return packageList as Package[];
     } else {
       console.log("No data available for packages");

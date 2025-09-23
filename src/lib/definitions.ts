@@ -6,6 +6,7 @@ export type Package = {
   description: string;
   details: string[];
   imageId: string;
+  voucherCount?: number;
 };
 
 export type Voucher = {

@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { PlusCircle, Ticket, Eye } from "lucide-react";
+import { PlusCircle, Ticket, Eye, Trash2, Database } from "lucide-react";
 import { getPackages } from "@/lib/database-data";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deletePackageAction } from "@/app/actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function AdminDashboard() {
   const voucherPackages = await getPackages();
@@ -25,35 +38,65 @@ export default async function AdminDashboard() {
           </p>
         </div>
         <Button asChild>
-            <Link href="/admin/packages/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add New Package
-            </Link>
+          <Link href="/admin/packages/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New Package
+          </Link>
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {voucherPackages.map((pkg) => (
-          <Card key={pkg.slug}>
+          <Card key={pkg.slug} className="flex flex-col">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-headline">{pkg.name}</CardTitle>
-                <Ticket className="h-5 w-5 text-primary" />
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg font-headline">{pkg.name}</CardTitle>
+                  <CardDescription>UGX {pkg.price.toLocaleString()}</CardDescription>
+                </div>
+                 <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete Package</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure you want to delete this package?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the <strong>{pkg.name}</strong> package and all <strong>({pkg.voucherCount ?? 0})</strong> of its associated vouchers. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <form action={deletePackageAction}>
+                        <input type="hidden" name="packageSlug" value={pkg.slug} />
+                        <AlertDialogAction asChild>
+                          <SubmitButton variant="destructive">Delete Package</SubmitButton>
+                        </AlertDialogAction>
+                      </form>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
-              <CardDescription>UGX {pkg.price.toLocaleString()}</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 space-y-4">
               <p className="text-xs text-muted-foreground">
                 {pkg.details.join(' • ')}
               </p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground border-t pt-4">
+                  <Database className="h-4 w-4" />
+                  <span>{pkg.voucherCount ?? 0} Vouchers Available</span>
+              </div>
             </CardContent>
             <CardFooter className="grid grid-cols-2 gap-2">
-               <Button asChild className="w-full">
+              <Button asChild className="w-full">
                 <Link href={`/admin/upload/${pkg.slug}`}>
                   Upload Vouchers
                 </Link>
               </Button>
-               <Button asChild variant="outline" className="w-full">
+              <Button asChild variant="outline" className="w-full">
                 <Link href={`/admin/vouchers/${pkg.slug}`}>
                   <Eye className="mr-2 h-4 w-4" />
                   View Vouchers

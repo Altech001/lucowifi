@@ -383,3 +383,33 @@ export async function deleteVoucherAction(prevState: CrudVoucherState, formData:
         return { message: 'Failed to delete voucher.', success: false };
     }
 }
+
+type DeletePackageState = {
+    message: string;
+    success: boolean;
+}
+
+export async function deletePackageAction(formData: FormData): Promise<DeletePackageState> {
+    const packageSlug = formData.get('packageSlug') as string;
+
+    if (!packageSlug) {
+        return { message: 'Package slug is missing.', success: false };
+    }
+
+    try {
+        // Delete the package itself
+        const packageRef = ref(db, `packages/${packageSlug}`);
+        await remove(packageRef);
+
+        // Delete all associated vouchers
+        const vouchersRef = ref(db, `vouchers/${packageSlug}`);
+        await remove(vouchersRef);
+
+        revalidatePath('/admin');
+        return { message: 'Package and all its vouchers have been deleted.', success: true };
+
+    } catch (e) {
+        console.error("Failed to delete package", e);
+        return { message: 'Failed to delete package.', success: false };
+    }
+}
