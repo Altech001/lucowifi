@@ -32,9 +32,9 @@ export default async function AdminDashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold font-headline">Voucher Management</h1>
+          <h1 className="text-2xl font-semibold font-headline">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Manage packages and their associated voucher codes.
+            Manage packages, vouchers, and members.
           </p>
         </div>
         <Button asChild>
