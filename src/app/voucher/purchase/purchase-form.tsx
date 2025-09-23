@@ -27,7 +27,6 @@ type PurchaseFormProps = {
 export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
   const [state, formAction] = useActionState(purchaseVoucherAction, initialState);
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
@@ -38,13 +37,6 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
         title: 'Purchase Failed',
         description: state.message,
       });
-    }
-     // If an active voucher is found, store the phone number that was used.
-    if (state.activeVoucherCode && formRef.current) {
-        const phoneInput = formRef.current.elements.namedItem('phoneNumber') as HTMLInputElement;
-        if(phoneInput) {
-            setPhoneNumber(phoneInput.value);
-        }
     }
   }, [state, toast]);
 
@@ -92,7 +84,7 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
   }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-6">
         <input type="hidden" name="packageSlug" value={packageSlug} />
         <input type="hidden" name="forcePurchase" value="false" />
         <div className="space-y-2">
@@ -104,6 +96,8 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
             placeholder="+256712345678" 
             required 
             className="text-lg"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
         />
         <p className="text-sm text-muted-foreground">
             We'll check if you have an active voucher first. Include country code.
