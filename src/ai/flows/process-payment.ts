@@ -40,9 +40,9 @@ const processPaymentTool = ai.defineTool(
             return { success: false, message };
         }
 
-        // IMPORTANT: Replace with your actual success and failure URLs.
-        const successUrl = 'https://your_domain.com/payment/success';
-        const failedUrl = 'https://your_domain.com/payment/failed';
+        // Use valid, non-placeholder URLs.
+        const successUrl = 'https://www.google.com/search?q=success';
+        const failedUrl = 'https://www.google.com/search?q=failed';
 
         // Format amount to have two decimal places, e.g., "1000.00"
         const formattedAmount = parseFloat(payload.amount).toFixed(2);
