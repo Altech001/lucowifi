@@ -23,7 +23,6 @@ const checkPaymentStatusTool = ai.defineTool(
         outputSchema: CheckPaymentStatusOutputSchema,
     },
     async (payload) => {
-        // This URL is an assumption. Replace with the actual status check URL if different.
         const url = 'https://hive-sooty-eight.vercel.app/check_status';
         
         const body = {
