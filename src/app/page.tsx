@@ -1,5 +1,5 @@
 
-import { getPackages } from '@/lib/firestore-data';
+import { getPackages } from '@/lib/database-data';
 import { PackageGrid } from '@/app/packages/package-grid';
 
 export default async function Home() {

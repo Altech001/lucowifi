@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { PlusCircle, Ticket } from "lucide-react";
-import { getPackages } from "@/lib/firestore-data";
+import { getPackages } from "@/lib/database-data";
 import { Button } from "@/components/ui/button";
 import {
   Card,

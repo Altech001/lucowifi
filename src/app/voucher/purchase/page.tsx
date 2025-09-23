@@ -1,5 +1,5 @@
 
-import { getPackages } from '@/lib/firestore-data';
+import { getPackages } from '@/lib/database-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PurchaseForm } from './purchase-form';
 import Link from 'next/link';

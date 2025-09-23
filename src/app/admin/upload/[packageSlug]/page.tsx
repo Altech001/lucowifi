@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { getPackages } from "@/lib/firestore-data";
+import { getPackages } from "@/lib/database-data";
 import { UploadForm } from "./upload-form";
 import {
   Breadcrumb,
@@ -54,7 +54,7 @@ export default async function UploadPage({ params }: { params: { packageSlug: st
             </Breadcrumb>
 
             <div className="mb-4">
-                <h1 className="text-2xl font-semibold font-headline">
+                <h1 className="text-2xl font-semibold font.headline">
                     Upload Vouchers for <span className="text-primary">{selectedPackage.name}</span>
                 </h1>
                 <p className="text-sm text-muted-foreground">

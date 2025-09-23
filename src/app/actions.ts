@@ -10,8 +10,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Package } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, writeBatch, doc } from 'firebase/firestore';
-import { revalidatePath } from 'next/cache';
+import { ref, set, push } from 'firebase/database';
 
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
@@ -207,15 +206,21 @@ export async function uploadVouchersAction(
     const voucherCount = voucherCodes.length;
 
     try {
-        const batch = writeBatch(db);
-        const vouchersCollection = collection(db, 'packages', packageSlug, 'vouchers');
-
+        const vouchersRef = ref(db, `vouchers/${packageSlug}`);
+        const newVouchers: { [key: string]: { code: string; used: boolean; createdAt: string } } = {};
+        
         voucherCodes.forEach(code => {
-            const voucherRef = doc(vouchersCollection);
-            batch.set(voucherRef, { code: code, used: false, createdAt: new Date() });
+            const newVoucherRef = push(vouchersRef); // Get a new unique key
+            if(newVoucherRef.key) {
+                newVouchers[newVoucherRef.key] = {
+                    code: code,
+                    used: false,
+                    createdAt: new Date().toISOString()
+                };
+            }
         });
-
-        await batch.commit();
+        
+        await set(vouchersRef, newVouchers);
 
         return {
             message: `${voucherCount} vouchers have been successfully uploaded and linked to the "${packageSlug}" package.`,
@@ -223,7 +228,7 @@ export async function uploadVouchersAction(
             count: voucherCount,
         }
     } catch (error) {
-        console.error("Failed to upload vouchers to Firestore", error);
+        console.error("Failed to upload vouchers to Realtime DB", error);
         return { message: 'Failed to save vouchers to the database.', success: false };
     }
 }
@@ -251,9 +256,10 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     if (!name || !price || !description || !details) {
         return { message: 'All fields are required.', success: false };
     }
+    
+    const slug = generateSlug(name);
 
-    const newPackage: Omit<Package, 'imageId'> = {
-        slug: generateSlug(name),
+    const newPackage: Omit<Package, 'slug' | 'imageId'> = {
         name,
         price: parseInt(price, 10),
         description,
@@ -261,18 +267,17 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     };
     
     // In a real app, you would probably want to assign a meaningful imageId
-    const newPackageWithImage: Package = {
+    const newPackageWithImage: Omit<Package, 'slug'> = {
         ...newPackage,
         imageId: 'gold-package' // Default image for new packages
     };
 
     try {
-        await addDoc(collection(db, 'packages'), newPackageWithImage);
-        // revalidatePath('/admin'); // This can cause issues with useActionState
+        const packageRef = ref(db, 'packages/' + slug);
+        await set(packageRef, newPackageWithImage);
         return { message: 'Package created successfully!', success: true };
     } catch (error) {
-        console.error("Failed to write to firestore", error);
+        console.error("Failed to write to Realtime DB", error);
         return { message: 'Failed to save the new package.', success: false };
     }
 }
-
