@@ -42,4 +42,12 @@ export const packages: Package[] = [
     details: ["Unlimited data", "Up to 5 devices", "24/7 priority support"],
     imageId: "silver-package",
   },
-];
+,
+  {
+    slug: "altech",
+    name: "Altech",
+    price: 2000,
+    description: "New data plan",
+    details: ["10mpbs, unlimited"],
+    imageId: "gold-package",
+  }];
