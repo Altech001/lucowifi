@@ -8,9 +8,10 @@ import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Package } from '@/lib/definitions';
+import { Package, Voucher } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
-import { ref, set, push, update } from 'firebase/database';
+import { ref, set, push, update, remove } from 'firebase/database';
+import { revalidatePath } from 'next/cache';
 
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
@@ -236,6 +237,8 @@ export async function uploadVouchersAction(
         
         await update(vouchersRef, newVouchers);
 
+        revalidatePath(`/admin/vouchers/${packageSlug}`);
+
         return {
             message: `${voucherCount} vouchers have been successfully uploaded and linked to the "${packageSlug}" package.`,
             success: true,
@@ -289,6 +292,7 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     try {
         const packageRef = ref(db, 'packages/' + slug);
         await set(packageRef, newPackageWithImage);
+        revalidatePath('/admin');
         return { message: 'Package created successfully!', success: true };
     } catch (error) {
         console.error("Failed to write to Realtime DB", error);
@@ -296,4 +300,86 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     }
 }
 
+type CrudVoucherState = {
+    message: string;
+    success: boolean;
+}
+
+export async function addVoucherAction(prevState: CrudVoucherState, formData: FormData): Promise<CrudVoucherState> {
+    const packageSlug = formData.get('packageSlug') as string;
+    const voucherCode = formData.get('voucherCode') as string;
+
+    if (!packageSlug || !voucherCode) {
+        return { message: 'Package or voucher code is missing.', success: false };
+    }
+
+    try {
+        const vouchersRef = ref(db, `vouchers/${packageSlug}`);
+        const newVoucherRef = push(vouchersRef);
+        await set(newVoucherRef, {
+            code: voucherCode,
+            used: false,
+            createdAt: new Date().toISOString()
+        });
+
+        revalidatePath(`/admin/vouchers/${packageSlug}`);
+        return { message: 'Voucher added successfully.', success: true };
+    } catch(e) {
+        console.error("Failed to add voucher", e);
+        return { message: 'Failed to add voucher.', success: false };
+    }
+}
+
+export async function updateVoucherAction(prevState: CrudVoucherState, formData: FormData): Promise<CrudVoucherState> {
+    const packageSlug = formData.get('packageSlug') as string;
+    const voucherId = formData.get('voucherId') as string;
+    const voucherCode = formData.get('voucherCode') as string;
+    const isUsed = formData.get('used') === 'on';
+
+     if (!packageSlug || !voucherId || !voucherCode) {
+        return { message: 'Missing required fields.', success: false };
+    }
     
+    try {
+        const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
+        const snapshot = await get(voucherRef);
+        if(!snapshot.exists()) {
+            return { message: 'Voucher not found.', success: false };
+        }
+        const existingVoucher = snapshot.val();
+
+        await update(voucherRef, {
+            ...existingVoucher,
+            code: voucherCode,
+            used: isUsed
+        });
+
+        revalidatePath(`/admin/vouchers/${packageSlug}`);
+        return { message: 'Voucher updated successfully.', success: true };
+
+    } catch(e) {
+        console.error("Failed to update voucher", e);
+        return { message: 'Failed to update voucher.', success: false };
+    }
+}
+
+export async function deleteVoucherAction(prevState: CrudVoucherState, formData: FormData): Promise<CrudVoucherState> {
+     const packageSlug = formData.get('packageSlug') as string;
+    const voucherId = formData.get('voucherId') as string;
+
+    if (!packageSlug || !voucherId) {
+        return { message: 'Package or voucher ID is missing.', success: false };
+    }
+
+    try {
+        const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
+        await remove(voucherRef);
+
+        revalidatePath(`/admin/vouchers/${packageSlug}`);
+        return { message: 'Voucher deleted successfully.', success: true };
+
+    } catch (e) {
+        console.error("Failed to delete voucher", e);
+        return { message: 'Failed to delete voucher.', success: false };
+    }
+}

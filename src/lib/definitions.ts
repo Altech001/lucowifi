@@ -7,3 +7,10 @@ export type Package = {
   details: string[];
   imageId: string;
 };
+
+export type Voucher = {
+  id: string;
+  code: string;
+  used: boolean;
+  createdAt: string;
+};

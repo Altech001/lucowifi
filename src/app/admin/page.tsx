@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { PlusCircle, Ticket } from "lucide-react";
+import { PlusCircle, Ticket, Eye } from "lucide-react";
 import { getPackages } from "@/lib/database-data";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ export default async function AdminDashboard() {
         <div>
           <h1 className="text-2xl font-semibold font-headline">Voucher Management</h1>
           <p className="text-sm text-muted-foreground">
-            Select a package to upload and manage voucher codes.
+            Manage packages and their associated voucher codes.
           </p>
         </div>
         <Button asChild>
@@ -47,10 +47,16 @@ export default async function AdminDashboard() {
                 {pkg.details.join(' • ')}
               </p>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="grid grid-cols-2 gap-2">
                <Button asChild className="w-full">
                 <Link href={`/admin/upload/${pkg.slug}`}>
-                  Manage Vouchers
+                  Upload Vouchers
+                </Link>
+              </Button>
+               <Button asChild variant="outline" className="w-full">
+                <Link href={`/admin/vouchers/${pkg.slug}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Vouchers
                 </Link>
               </Button>
             </CardFooter>
