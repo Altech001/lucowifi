@@ -87,15 +87,26 @@ export async function analyzeProfileAction(
 const membershipSchema = z.object({
   name: nameSchema,
   phoneNumber: phoneSchema,
+  username: z.string().min(3, { message: 'Username must be at least 3 characters.'}),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.'}),
 });
 
+type MembershipState = {
+    message: string;
+    success: boolean;
+    tempUsername?: string;
+    tempPassword?: string;
+}
+
 export async function createMembershipAction(
-  prevState: { message: string; success: boolean },
+  prevState: MembershipState,
   formData: FormData
-): Promise<{ message: string; success: boolean }> {
+): Promise<MembershipState> {
   const rawFormData = {
     name: formData.get('name'),
     phoneNumber: formData.get('phoneNumber'),
+    username: formData.get('username'),
+    password: formData.get('password'),
   };
 
   const validation = membershipSchema.safeParse(rawFormData);
@@ -104,16 +115,27 @@ export async function createMembershipAction(
     return { message: validation.error.errors[0].message, success: false };
   }
 
-  const { name, phoneNumber } = validation.data;
+  const { name, phoneNumber, username, password } = validation.data;
 
   try {
     const result = await membershipSignup({
       name,
       phoneNumber,
+      username,
+      password,
     });
 
     if (result.success) {
-      redirect(`/membership/success?name=${encodeURIComponent(name)}`);
+      // Generate temporary credentials
+      const tempUsername = `temp-${Math.random().toString(36).substring(2, 8)}`;
+      const tempPassword = Math.random().toString(36).substring(2, 10);
+
+      return {
+        message: 'Signup successful! Your membership is pending approval.',
+        success: true,
+        tempUsername,
+        tempPassword,
+      }
     } else {
       return { message: result.message || 'Failed to create membership.', success: false };
     }

@@ -17,6 +17,8 @@ const MembershipSignupInputSchema = z.object({
   phoneNumber: z
     .string()
     .describe('The user\'s WhatsApp phone number, including the country code.'),
+  username: z.string().describe('The desired username for the membership.'),
+  password: z.string().describe('The desired password for the membership account.'),
 });
 export type MembershipSignupInput = z.infer<typeof MembershipSignupInputSchema>;
 
@@ -62,7 +64,7 @@ const membershipSignupFlow = ai.defineFlow(
   },
   async (input) => {
     // In a real app, you would save the user to a database here.
-    console.log(`Creating membership for ${input.name} with phone ${input.phoneNumber}`);
+    console.log(`Creating membership for ${input.name} with phone ${input.phoneNumber}, username ${input.username}`);
 
     // Call the tool to send a welcome message.
     const welcomeResult = await sendWelcomeMessage({
@@ -70,9 +72,16 @@ const membershipSignupFlow = ai.defineFlow(
       name: input.name,
     });
 
-    return {
-      success: welcomeResult.success,
-      message: welcomeResult.success ? 'Membership created successfully!' : 'Failed to send welcome message.',
-    };
+    if (welcomeResult.success) {
+      return {
+        success: true,
+        message: 'Membership pending approval. Welcome message sent.',
+      };
+    } else {
+        return {
+            success: false,
+            message: 'Failed to send welcome message.',
+        }
+    }
   }
 );
