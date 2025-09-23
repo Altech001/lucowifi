@@ -9,6 +9,7 @@ import { membershipSignup } from '@/ai/flows/membership-signup';
 import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
 import { processPayment } from '@/ai/flows/process-payment';
 import { checkPaymentStatus } from '@/ai/flows/check-payment-status';
+import { initiatePesapalPayment } from '@/ai/flows/pesapal-payment';
 import { CheckPaymentStatusOutputSchema } from '@/lib/payment-definitions';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -973,4 +974,46 @@ export async function checkPaymentStatusAction(
       message: errorMessage,
     };
   }
+}
+
+// Pesapal Actions
+const pesapalPaymentSchema = z.object({
+  amount: z.string().min(1, 'Amount is required'),
+  description: z.string().min(1, 'Description is required'),
+  email: z.string().email('Invalid email address'),
+  phoneNumber: z.string().min(1, 'Phone number is required'),
+});
+
+type PesapalActionState = {
+    message: string;
+    success: boolean;
+    redirectUrl?: string;
+};
+
+export async function initiatePesapalPaymentAction(prevState: PesapalActionState, formData: FormData): Promise<PesapalActionState> {
+    const validation = pesapalPaymentSchema.safeParse({
+        amount: formData.get('amount'),
+        description: formData.get('description'),
+        email: formData.get('email'),
+        phoneNumber: formData.get('phoneNumber'),
+    });
+
+    if (!validation.success) {
+        return { success: false, message: validation.error.errors[0].message };
+    }
+    
+    try {
+        const result = await initiatePesapalPayment(validation.data);
+        if (result.success && result.redirectUrl) {
+            redirect(result.redirectUrl);
+        }
+        return {
+            success: result.success,
+            message: result.message,
+        }
+    } catch(e) {
+        console.error("Pesapal initiation failed:", e);
+        const errorMessage = e instanceof Error ? e.message : 'An unknown server error occurred.';
+        return { success: false, message: errorMessage };
+    }
 }

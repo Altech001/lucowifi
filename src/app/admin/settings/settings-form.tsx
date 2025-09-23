@@ -13,11 +13,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/submit-button';
 import { Textarea } from '@/components/ui/textarea';
-import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles, Loader2 } from 'lucide-react';
+import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles, Loader2, CreditCard } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AnnouncementsForm } from './announcements-form';
 import { PopupForm } from './popup-form';
 import { PaymentForm } from './payment-form';
+import { PesapalForm } from './pesapal-form';
 
 const initialPromoState = {
     message: '',
@@ -116,6 +117,8 @@ export function SettingsForm({ packages, promotions, announcements, popupSetting
                  <AnnouncementsForm announcements={announcements} />
                  
                  <PaymentForm />
+
+                 <PesapalForm />
 
                 <Card>
                     <CardHeader>
