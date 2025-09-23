@@ -34,11 +34,9 @@ const processPaymentTool = ai.defineTool(
             return { success: false, message };
         }
 
-        // Use real, valid URLs as placeholders
         const successUrl = 'https://www.google.com/search?q=success';
         const failedUrl = 'https://www.google.com/search?q=failed';
         
-        // Ensure amount is a string of an integer
         const formattedAmount = parseInt(payload.amount, 10).toString();
 
         const body = {
@@ -70,7 +68,6 @@ const processPaymentTool = ai.defineTool(
             try {
                 const responseData = JSON.parse(responseDataText);
                 
-                // Extract transaction status and reference from nested XML if it exists
                 let transactionStatus = 'UNKNOWN';
                 let transactionReference = null;
                 if (responseData.response && typeof responseData.response === 'string') {
@@ -102,7 +99,6 @@ const processPaymentTool = ai.defineTool(
                     };
                 }
             } catch (jsonError) {
-                 // Handle cases where the response is not valid JSON, but the request was successful (status 200)
                  return {
                     success: true,
                     message: 'Payment initiated. The response from the provider was not in a standard JSON format.',
@@ -112,7 +108,6 @@ const processPaymentTool = ai.defineTool(
 
         } catch (error: any) {
             console.error('Failed to call payment API:', error);
-            // Handle fetch-specific errors (e.g., network issues)
             const errorMessage = error instanceof Error ? error.message : 'An unknown network error occurred.';
             return {
                 success: false,
