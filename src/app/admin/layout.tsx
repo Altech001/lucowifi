@@ -1,14 +1,6 @@
 
 import Link from "next/link";
 import { BarChart, Home, Ticket, Users, UserCog, LogOut, Settings } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import { logout } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 
@@ -66,10 +58,10 @@ export default function AdminLayout({
           </Link>
            <div className="mt-auto">
             <form action={logout}>
-                <button className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+                <Button variant="ghost" size="icon" type="submit" className="w-9 h-9 md:h-8 md:w-8">
                     <LogOut className="h-5 w-5" />
                     <span className="sr-only">Logout</span>
-                </button>
+                </Button>
             </form>
            </div>
         </nav>
@@ -82,14 +74,10 @@ export default function AdminLayout({
       </div>
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 sm:hidden">
-            <div className="grid h-full max-w-lg grid-cols-6 mx-auto">
+            <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
                 <Link href="/admin" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Home className="w-5 h-5 mb-1 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Home</span>
-                </Link>
-                <Link href="/admin" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
-                    <Ticket className="w-5 h-5 mb-1 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Vouchers</span>
                 </Link>
                 <Link href="/admin/active-vouchers" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Users className="w-5 h-5 mb-1 text-muted-foreground" />

@@ -626,7 +626,7 @@ export async function login(
 export async function logout() {
   const cookieStore = cookies();
   cookieStore.delete('luco-admin-auth');
-  redirect('/admin/login');
+  redirect('/login');
 }
 
 
@@ -795,5 +795,3 @@ export async function generateAIMessageAction(messageType: string): Promise<Gene
         return { message: 'An unexpected error occurred during AI generation.', success: false };
     }
 }
-
-    

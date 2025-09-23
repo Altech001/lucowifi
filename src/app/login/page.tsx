@@ -1,5 +1,4 @@
 
-
 import {
   Card,
   CardContent,
@@ -12,7 +11,6 @@ import { Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -29,6 +27,5 @@ export default function AdminLoginPage() {
           <LoginForm />
         </CardContent>
       </Card>
-    </div>
   );
 }
