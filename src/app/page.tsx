@@ -16,9 +16,8 @@ export default function Home() {
         <h1 className="text-4xl sm:text-5xl font-bold font-headline text-primary tracking-tight">
           VoucherWave
         </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Instant connectivity, delivered. Choose a package to get started and
-          receive your voucher via WhatsApp in seconds.
+        <p className="mt-3 text-base text-muted-foreground max-w-xl mx-auto">
+          Get connected in seconds. Select one of our flexible data packages and get your voucher code delivered instantly via WhatsApp.
         </p>
       </header>
 
@@ -38,7 +37,7 @@ export default function Home() {
                 href={`/packages/${pkg.slug}`}
                 className="block"
               >
-                <div className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
+                <div className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent hover:text-accent-foreground">
                   <div>
                     <h3 className="font-semibold text-lg group-hover:text-primary">
                       {pkg.name}
