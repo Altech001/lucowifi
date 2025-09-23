@@ -8,6 +8,8 @@ import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
 import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
 import { processPayment } from '@/ai/flows/process-payment';
+import { checkPaymentStatus } from '@/ai/flows/check-payment-status';
+import { CheckPaymentStatusOutputSchema } from '@/lib/payment-definitions';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Package, Voucher, PopupSettings } from '@/lib/definitions';
@@ -942,4 +944,33 @@ export async function initiatePaymentAction(prevState: PaymentActionState, formD
             message: errorMessage,
         };
     }
+}
+
+
+export async function checkPaymentStatusAction(
+  transactionReference: string
+): Promise<z.infer<typeof CheckPaymentStatusOutputSchema>> {
+  const username = process.env.PAYMENT_API_USERNAME;
+  const password = process.env.PAYMENT_API_PASSWORD;
+
+  if (!username || !password) {
+    return { success: false, status: 'ERROR', message: 'Payment credentials are not configured.' };
+  }
+
+  if (!transactionReference) {
+    return { success: false, status: 'ERROR', message: 'Transaction reference is missing.' };
+  }
+
+  try {
+    const result = await checkPaymentStatus({ transactionReference, username, password });
+    return result;
+  } catch (error) {
+    console.error("Check payment status action failed:", error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
+    return {
+      success: false,
+      status: 'ERROR',
+      message: errorMessage,
+    };
+  }
 }
