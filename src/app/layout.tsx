@@ -5,17 +5,20 @@ import { Header } from '@/components/header';
 import { Toaster } from '@/components/ui/toaster';
 import { AnnouncementBar } from '@/components/announcement-bar';
 import { AnnouncementDialog } from '@/components/announcement-dialog';
+import { PromotionsDialog } from '@/components/promotions-dialog';
+import { getPromotions } from '@/lib/database-data';
 
 export const metadata: Metadata = {
   title: 'Luco WIFI',
   description: 'Purchase and receive voucher codes instantly.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const promotions = await getPromotions();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -37,6 +40,7 @@ export default function RootLayout({
           </div>
           <Toaster />
           <AnnouncementDialog />
+          <PromotionsDialog promotions={promotions} />
         </ThemeProvider>
       </body>
     </html>

@@ -1,15 +1,21 @@
+
+'use client';
+
 import Link from 'next/link';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Package } from 'lucide-react';
+import { LayoutDashboard, Package, Gift } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { usePromotions } from '@/hooks/use-promotions';
+
 
 export function Header() {
+    const { setIsOpen } = usePromotions();
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
@@ -21,6 +27,17 @@ export function Header() {
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <TooltipProvider>
+             <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
+                    <Gift className="h-5 w-5" />
+                    <span className="sr-only">Promotions</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View Promotions</p>
+              </TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" asChild>
