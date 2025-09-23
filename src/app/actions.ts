@@ -414,16 +414,13 @@ export async function deleteVoucherAction(prevState: CrudVoucherState, formData:
     }
 }
 
-type DeletePackageState = {
-    message: string;
-    success: boolean;
-}
 
-export async function deletePackageAction(formData: FormData): Promise<DeletePackageState> {
+export async function deletePackageAction(formData: FormData): Promise<void> {
     const packageSlug = formData.get('packageSlug') as string;
 
     if (!packageSlug) {
-        return { message: 'Package slug is missing.', success: false };
+        console.error("Delete failed: Package slug is missing.");
+        return;
     }
 
     try {
@@ -435,11 +432,11 @@ export async function deletePackageAction(formData: FormData): Promise<DeletePac
         const vouchersRef = ref(db, `vouchers/${packageSlug}`);
         await remove(vouchersRef);
 
-        revalidatePath('/admin');
-        return { message: 'Package and all its vouchers have been deleted.', success: true };
-
     } catch (e) {
         console.error("Failed to delete package", e);
-        return { message: 'Failed to delete package.', success: false };
+        // We can't return a message to the client directly in this pattern,
+        // but revalidation will fail and the UI won't update, indicating an error.
     }
+
+    revalidatePath('/admin');
 }
