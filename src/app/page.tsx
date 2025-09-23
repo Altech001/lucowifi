@@ -21,7 +21,7 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {packages.map((pkg) => (
           <Link href={`/packages/${pkg.slug}`} key={pkg.slug} className="flex">
             <Card className="flex flex-col w-full transition-all duration-200 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50">
