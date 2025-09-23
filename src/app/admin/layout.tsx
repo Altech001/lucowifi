@@ -23,7 +23,7 @@ export default function AdminLayout({
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-16 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5 flex-1">
           <Link
-            href="/"
+            href="/admin"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
             <Home className="h-4 w-4 transition-all group-hover:scale-110" />
@@ -83,7 +83,7 @@ export default function AdminLayout({
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 sm:hidden">
             <div className="grid h-full max-w-lg grid-cols-6 mx-auto">
-                <Link href="/" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                <Link href="/admin" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Home className="w-5 h-5 mb-1 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Home</span>
                 </Link>
