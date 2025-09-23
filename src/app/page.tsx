@@ -14,10 +14,10 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <header className="text-center mb-10">
         <h1 className="text-4xl sm:text-5xl font-bold font-headline text-primary tracking-tight">
-          VoucherWave
+          Luco WIFI
         </h1>
         <p className="mt-3 text-base text-muted-foreground max-w-xl mx-auto">
-          Get connected in seconds. Select one of our flexible data packages and get your voucher code delivered instantly via WhatsApp.
+          Get connected in seconds. Select a package and receive your voucher via WhatsApp instantly.
         </p>
       </header>
 
@@ -37,7 +37,7 @@ export default function Home() {
                 href={`/packages/${pkg.slug}`}
                 className="block"
               >
-                <div className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent hover:text-accent-foreground">
+                <div className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
                   <div>
                     <h3 className="font-semibold text-lg group-hover:text-primary">
                       {pkg.name}
