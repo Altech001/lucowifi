@@ -1,5 +1,4 @@
 
-'use server';
 import { z } from 'zod';
 
 export const CheckPaymentStatusInputSchema = z.object({
