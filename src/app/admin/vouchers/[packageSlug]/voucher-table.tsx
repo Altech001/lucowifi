@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import type { Voucher } from '@/lib/definitions';
-import { useActionState } from 'react-dom';
+import { useFormState } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { addVoucherAction, updateVoucherAction, deleteVoucherAction } from '@/app/actions';
 
@@ -64,9 +64,9 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
   
   const { toast } = useToast();
 
-  const [addState, addFormAction] = useActionState(addVoucherAction, initialState);
-  const [updateState, updateFormAction] = useActionState(updateVoucherAction, initialState);
-  const [deleteState, deleteFormAction] = useActionState(deleteVoucherAction, initialState);
+  const [addState, addFormAction] = useFormState(addVoucherAction, initialState);
+  const [updateState, updateFormAction] = useFormState(updateVoucherAction, initialState);
+  const [deleteState, deleteFormAction] = useFormState(deleteVoucherAction, initialState);
   
   const addFormRef = useRef<HTMLFormElement>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
