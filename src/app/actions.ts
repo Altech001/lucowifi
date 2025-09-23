@@ -32,21 +32,31 @@ export async function purchaseVoucherAction(
 
   const validatedPhoneNumber = validation.data;
   let voucherCode: string | null = null;
+  let voucherId: string | null = null;
   let hasSucceeded = false;
 
   try {
     const vouchersRef = ref(db, `vouchers/${packageSlug}`);
-    const unusedVoucherQuery = query(vouchersRef, orderByChild('usedAt'), equalTo(null), limitToFirst(1));
-    const snapshot = await get(unusedVoucherQuery);
+    const snapshot = await get(vouchersRef);
 
     if (!snapshot.exists()) {
       return { message: 'Sorry, all vouchers for this package are currently sold out.', success: false };
     }
 
-    const voucherData = snapshot.val();
-    const voucherId = Object.keys(voucherData)[0];
-    const voucher = voucherData[voucherId];
-    voucherCode = voucher.code;
+    const allVouchers = snapshot.val();
+    
+    // Find the first available voucher by filtering in code
+    const availableVoucherEntry = Object.entries(allVouchers).find(
+        ([id, voucher]: [string, any]) => !voucher.usedAt
+    );
+
+    if (!availableVoucherEntry) {
+         return { message: 'Sorry, all vouchers for this package are currently sold out.', success: false };
+    }
+
+    voucherId = availableVoucherEntry[0];
+    const voucherData: any = availableVoucherEntry[1];
+    voucherCode = voucherData.code;
 
     const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
     await update(voucherRef, {
@@ -66,7 +76,8 @@ export async function purchaseVoucherAction(
     redirect(`/voucher/${voucherCode}`);
   }
 
-  return { message: 'Failed to retrieve a voucher code.', success: false };
+  // This should theoretically not be reached if everything works
+  return { message: 'Failed to complete the purchase process.', success: false };
 }
 
 type AnalysisState = {
@@ -436,6 +447,8 @@ export async function deletePackageAction(formData: FormData): Promise<void> {
 }
 
     
+    
+
     
 
     
