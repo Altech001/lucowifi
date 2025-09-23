@@ -2,13 +2,13 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
-import { findMembershipByUsername } from '@/app/actions';
+import { findMembershipAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
-import { User, Lock, Search, AlertCircle, KeyRound } from 'lucide-react';
+import { User, Lock, Search, AlertCircle, KeyRound, Phone } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const initialState = {
@@ -19,7 +19,7 @@ const initialState = {
 
 
 export function MembershipLoginForm() {
-    const [state, formAction] = useActionState(findMembershipByUsername, initialState);
+    const [state, formAction] = useActionState(findMembershipAction, initialState);
     const { toast } = useToast();
 
      useEffect(() => {
@@ -60,11 +60,11 @@ export function MembershipLoginForm() {
     return (
         <form action={formAction} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="username" className="flex items-center gap-2">
+                <Label htmlFor="identifier" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    Username
+                    Username or Phone Number
                 </Label>
-                <Input id="username" name="username" type="text" placeholder="your_username" required />
+                <Input id="identifier" name="identifier" type="text" placeholder="your_username or +256..." required />
             </div>
             <SubmitButton className="w-full">
                 <Search className="mr-2 h-4 w-4" />
@@ -80,4 +80,3 @@ export function MembershipLoginForm() {
         </form>
     );
 }
-

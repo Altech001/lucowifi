@@ -498,11 +498,11 @@ type LoginState = {
     }
 };
 
-export async function findMembershipByUsername(prevState: LoginState, formData: FormData): Promise<LoginState> {
-    const username = formData.get('username') as string;
+export async function findMembershipAction(prevState: LoginState, formData: FormData): Promise<LoginState> {
+    const identifier = formData.get('identifier') as string;
     
-    if (!username) {
-        return { message: 'Username is required.', success: false };
+    if (!identifier) {
+        return { message: 'Username or phone number is required.', success: false };
     }
 
     try {
@@ -512,7 +512,7 @@ export async function findMembershipByUsername(prevState: LoginState, formData: 
         if (snapshot.exists()) {
             const allMemberships = snapshot.val();
             const foundEntry = Object.values(allMemberships).find(
-                (member: any) => member.username === username
+                (member: any) => member.username === identifier || member.phoneNumber === identifier
             );
 
             if (foundEntry) {
@@ -528,7 +528,7 @@ export async function findMembershipByUsername(prevState: LoginState, formData: 
             }
         }
         
-        return { message: 'No membership found with that username.', success: false };
+        return { message: 'No membership found with that username or phone number.', success: false };
 
     } catch(e) {
         console.error("Failed to query membership", e);
