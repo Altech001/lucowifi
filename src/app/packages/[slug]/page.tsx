@@ -38,7 +38,7 @@ export default function PackagePage({ params }: { params: { slug: string } }) {
           </CardHeader>
           <CardContent>
             <div className="my-4">
-              <span className="text-5xl font-bold font-headline">${pkg.price}</span>
+              <span className="text-5xl font-bold font-headline">UGX {pkg.price}</span>
               <span className="text-muted-foreground text-sm"> / one-time purchase</span>
             </div>
             <ul className="space-y-3 text-base">

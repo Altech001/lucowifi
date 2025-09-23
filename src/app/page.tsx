@@ -31,7 +31,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">
               <div className="mb-6">
-                <span className="text-4xl font-bold font-headline">${pkg.price}</span>
+                <span className="text-4xl font-bold font-headline">UGX {pkg.price}</span>
                 {pkg.slug.includes('month') && <span className="text-muted-foreground text-sm"> / month</span>}
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
