@@ -32,10 +32,10 @@ export async function purchaseVoucherAction(
 
   const validatedPhoneNumber = validation.data;
   let voucherCode: string | null = null;
+  let hasSucceeded = false;
 
   try {
     const vouchersRef = ref(db, `vouchers/${packageSlug}`);
-    // Find a voucher that does NOT have a `usedAt` field.
     const unusedVoucherQuery = query(vouchersRef, orderByChild('usedAt'), equalTo(null), limitToFirst(1));
     const snapshot = await get(unusedVoucherQuery);
 
@@ -48,27 +48,24 @@ export async function purchaseVoucherAction(
     const voucher = voucherData[voucherId];
     voucherCode = voucher.code;
 
-    // Mark the voucher as used by adding a timestamp
     const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
     await update(voucherRef, {
       usedAt: new Date().toISOString(),
-      purchasedBy: validatedPhoneNumber // Optionally store who purchased it
+      purchasedBy: validatedPhoneNumber
     });
 
-    revalidatePath(`/admin`); // Revalidate to update voucher count
+    hasSucceeded = true;
     
   } catch (error) {
     console.error('Voucher purchase process failed:', error);
-    // In case of an error, it might be good to try and roll back, though it's complex.
-    // For now, we'll just log the error.
     return { message: 'An unexpected error occurred during your purchase.', success: false };
   }
 
-  if (voucherCode) {
+  if (hasSucceeded && voucherCode) {
+    revalidatePath(`/admin`); 
     redirect(`/voucher/${voucherCode}`);
   }
 
-  // This part should not be reachable if a redirect happens, but it's here for type safety.
   return { message: 'Failed to retrieve a voucher code.', success: false };
 }
 
@@ -439,4 +436,6 @@ export async function deletePackageAction(formData: FormData): Promise<void> {
 }
 
     
+    
+
     
