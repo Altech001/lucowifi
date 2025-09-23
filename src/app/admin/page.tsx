@@ -52,11 +52,13 @@ export default async function AdminDashboard() {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-lg font-headline">{pkg.name}</CardTitle>
-                  <CardDescription>UGX {pkg.price.toLocaleString()}</CardDescription>
+                  <CardDescription>
+                    {pkg.price.toLocaleString()}{pkg.slug === 'monthly-membership' ? ' / month' : ''}
+                    </CardDescription>
                 </div>
                  <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={pkg.slug === 'monthly-membership'}>
                       <Trash2 className="h-4 w-4" />
                       <span className="sr-only">Delete Package</span>
                     </Button>
@@ -83,30 +85,44 @@ export default async function AdminDashboard() {
               <p className="text-xs text-muted-foreground">
                 {pkg.details.join(' • ')}
               </p>
-              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground border-t pt-4">
-                  <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4" />
-                    <span>{pkg.voucherCount ?? 0} Available</span>
-                  </div>
-                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>{pkg.durationHours} hours</span>
-                  </div>
-              </div>
+               {pkg.slug !== 'monthly-membership' && (
+                <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground border-t pt-4">
+                    <div className="flex items-center gap-2">
+                        <Database className="h-4 w-4" />
+                        <span>{pkg.voucherCount ?? 0} Available</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>{pkg.durationHours} hours</span>
+                    </div>
+                </div>
+              )}
             </CardContent>
-            <CardFooter className="grid grid-cols-2 gap-2">
-              <Button asChild className="w-full">
-                <Link href={`/admin/upload/${pkg.slug}`}>
-                  Upload Vouchers
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link href={`/admin/vouchers/${pkg.slug}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Vouchers
-                </Link>
-              </Button>
-            </CardFooter>
+            {pkg.slug !== 'monthly-membership' && (
+              <CardFooter className="grid grid-cols-2 gap-2">
+                <Button asChild className="w-full">
+                  <Link href={`/admin/upload/${pkg.slug}`}>
+                    Upload Vouchers
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/admin/vouchers/${pkg.slug}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Vouchers
+                  </Link>
+                </Button>
+              </CardFooter>
+            )}
+             {pkg.slug === 'monthly-membership' && (
+                 <CardFooter>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/admin/members">
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Members
+                        </Link>
+                    </Button>
+                </CardFooter>
+            )}
           </Card>
         ))}
       </div>

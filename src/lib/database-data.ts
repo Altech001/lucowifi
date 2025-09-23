@@ -69,6 +69,10 @@ export function getVoucherStatus(voucher: Voucher | { usedAt?: string }, duratio
 }
 
 export async function getVouchersForPackage(packageSlug: string): Promise<Voucher[]> {
+    if (packageSlug === 'monthly-membership') {
+        return []; // Membership does not have vouchers, return empty array to prevent error
+    }
+
     const packageRef = ref(db, `packages/${packageSlug}`);
     const vouchersRef = ref(db, `vouchers/${packageSlug}`);
     try {
