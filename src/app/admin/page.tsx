@@ -72,9 +72,7 @@ export default async function AdminDashboard() {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <form action={deletePackageAction}>
                         <input type="hidden" name="packageSlug" value={pkg.slug} />
-                        <AlertDialogAction asChild>
-                          <SubmitButton variant="destructive">Delete Package</SubmitButton>
-                        </AlertDialogAction>
+                        <SubmitButton variant="destructive">Delete Package</SubmitButton>
                       </form>
                     </AlertDialogFooter>
                   </AlertDialogContent>
