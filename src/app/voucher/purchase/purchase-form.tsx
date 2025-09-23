@@ -24,7 +24,12 @@ type PurchaseFormProps = {
     packageSlug: string;
 }
 
-function ResendButton({ phoneNumber, voucherCode }: { phoneNumber: string, voucherCode: string }) {
+type ResendButtonProps = {
+  phoneNumber: string;
+  voucherCode: string;
+};
+
+function ResendButton({ phoneNumber, voucherCode }: ResendButtonProps) {
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
 
@@ -108,7 +113,7 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
                                     </span>
                                     <span>{voucher.expiry || 'Not yet activated'}</span>
                                 </div>
-                                {voucher.status === 'Active' && (
+                                {voucher.status === 'Active' && phoneNumber && (
                                      <div className="pt-2 flex justify-end">
                                          <ResendButton phoneNumber={phoneNumber} voucherCode={voucher.code} />
                                      </div>

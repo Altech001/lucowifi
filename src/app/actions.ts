@@ -724,7 +724,7 @@ const resendSchema = z.object({
 });
 
 export async function resendVoucherAction(
-  input: { phoneNumber: string; voucherCode: string }
+  input: z.infer<typeof resendSchema>
 ): Promise<ResendState> {
   const validation = resendSchema.safeParse(input);
 
