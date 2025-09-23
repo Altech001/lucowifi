@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "bronze-package",
+      "description": "Abstract orange and bronze tones representing the Bronze package",
+      "imageUrl": "https://images.unsplash.com/photo-1604654431894-9e5ca9c01cef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGJyb256ZXxlbnwwfHx8fDE3NTg2MzE4Mzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract bronze"
+    },
+    {
+      "id": "silver-package",
+      "description": "Abstract silver and light grey tones representing the Silver package",
+      "imageUrl": "https://images.unsplash.com/photo-1635151227785-429f420c6b9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMHNpbHZlcnxlbnwwfHx8fDE3NTg2MzE4Mzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract silver"
+    },
+    {
+      "id": "gold-package",
+      "description": "Abstract gold and yellow tones representing the Gold package",
+      "imageUrl": "https://images.unsplash.com/photo-1628331507643-ddf8016ca45d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhYnN0cmFjdCUyMGdvbGR8ZW58MHx8fHwxNzU4NjA5NzU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract gold"
+    },
+    {
+      "id": "admin-bg",
+      "description": "Abstract background for admin section",
+      "imageUrl": "https://images.unsplash.com/photo-1624965439943-09e0238644e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxuZXR3b3JrJTIwdGVjaG5vbG9neXxlbnwwfHx8fDE3NTg2MTg2NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "network technology"
+    }
+  ]
 }
