@@ -31,6 +31,7 @@ export async function purchaseVoucherAction(
   }
 
   const validatedPhoneNumber = validation.data;
+  let voucherCode: string | null = null;
 
   try {
     const vouchersRef = ref(db, `vouchers/${packageSlug}`);
@@ -45,7 +46,7 @@ export async function purchaseVoucherAction(
     const voucherData = snapshot.val();
     const voucherId = Object.keys(voucherData)[0];
     const voucher = voucherData[voucherId];
-    const voucherCode = voucher.code;
+    voucherCode = voucher.code;
 
     // Mark the voucher as used by adding a timestamp
     const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
@@ -55,7 +56,6 @@ export async function purchaseVoucherAction(
     });
 
     revalidatePath(`/admin`); // Revalidate to update voucher count
-    redirect(`/voucher/${voucherCode}`);
     
   } catch (error) {
     console.error('Voucher purchase process failed:', error);
@@ -63,6 +63,13 @@ export async function purchaseVoucherAction(
     // For now, we'll just log the error.
     return { message: 'An unexpected error occurred during your purchase.', success: false };
   }
+
+  if (voucherCode) {
+    redirect(`/voucher/${voucherCode}`);
+  }
+
+  // This part should not be reachable if a redirect happens, but it's here for type safety.
+  return { message: 'Failed to retrieve a voucher code.', success: false };
 }
 
 type AnalysisState = {
@@ -431,4 +438,5 @@ export async function deletePackageAction(formData: FormData): Promise<void> {
     revalidatePath('/admin');
 }
 
+    
     
