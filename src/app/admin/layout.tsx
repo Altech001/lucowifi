@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart, Home, Ticket } from "lucide-react";
+import { BarChart, Home, Ticket, Users } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -32,6 +32,13 @@ export default function AdminLayout({
           >
             <Ticket className="h-5 w-5" />
             <span className="sr-only">Vouchers</span>
+          </Link>
+          <Link
+            href="/admin/active-vouchers"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <Users className="h-5 w-5" />
+            <span className="sr-only">Active Vouchers</span>
           </Link>
           <Link
             href="/admin/analyze"
