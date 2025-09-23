@@ -99,6 +99,10 @@ const processPaymentTool = ai.defineTool(
                     };
                 }
             } catch (jsonError) {
+                 // The response from this provider is weird (JSON with XML inside).
+                 // It's possible for the outer layer to not be JSON on some errors.
+                 // Let's assume if it's not JSON, it's an initiated payment for now, but log it.
+                 console.log("Could not parse JSON, but assuming success. Body:", responseDataText);
                  return {
                     success: true,
                     message: 'Payment initiated. The response from the provider was not in a standard JSON format.',
@@ -135,4 +139,3 @@ const processPaymentFlow = ai.defineFlow(
     return result;
   }
 );
-

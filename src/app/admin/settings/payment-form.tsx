@@ -10,10 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/submit-button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CreditCard, CheckCircle, AlertCircle, Clock, RefreshCw, XCircle, Copy, Loader2 } from 'lucide-react';
+import { CreditCard, CheckCircle, AlertCircle, Clock, RefreshCw, XCircle, Copy, Loader2, Hourglass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
+type Status = 'IDLE' | 'PENDING' | 'SUCCESSFUL' | 'FAILED' | 'ERROR' | 'TIMEOUT';
 
 const initialFormState = {
     message: '',
@@ -21,26 +21,62 @@ const initialFormState = {
     data: undefined,
 };
 
-type Status = 'IDLE' | 'PENDING' | 'SUCCESSFUL' | 'FAILED' | 'ERROR';
+function CountdownTimer({ onTimeout }: { onTimeout: () => void }) {
+    const [counter, setCounter] = useState(30);
+
+    useEffect(() => {
+        if (counter === 0) {
+            onTimeout();
+            return;
+        }
+
+        const timer = setTimeout(() => setCounter(counter - 1), 1000);
+        return () => clearTimeout(timer);
+    }, [counter, onTimeout]);
+
+    return (
+        <div className="relative h-20 w-20">
+            <Loader2 className="absolute inset-0 h-full w-full animate-spin-slow text-primary/20" />
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 36 36">
+                <circle
+                    className="text-primary"
+                    strokeWidth="4"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="16"
+                    cx="18"
+                    cy="18"
+                    strokeDasharray={`${(counter / 30) * 100}, 100`}
+                    strokeDashoffset="25"
+                    transform="rotate(-90 18 18)"
+                />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold text-primary">{counter}</span>
+            </div>
+        </div>
+    );
+}
+
 
 export function PaymentForm() {
     const { toast } = useToast();
     const [state, formAction, isInitiating] = useActionState(initiatePaymentAction, initialFormState);
     const formRef = useRef<HTMLFormElement>(null);
     
-    // State for the status check part
     const [isCheckingStatus, startStatusCheck] = useTransition();
     const [transactionStatus, setTransactionStatus] = useState<Status>('IDLE');
     const [statusMessage, setStatusMessage] = useState('');
 
     useEffect(() => {
-        // Handle initiation result
-        if (state.success && state.data?.TransactionStatus === 'PENDING') {
-            setTransactionStatus('PENDING');
-            setStatusMessage(state.message);
-        } else if (state.message && !state.success) {
-            setTransactionStatus('ERROR');
-            setStatusMessage(state.message);
+        if (state.message) {
+             if (state.success && state.data?.TransactionStatus === 'PENDING') {
+                setTransactionStatus('PENDING');
+                setStatusMessage(state.message);
+            } else if (!state.success) {
+                setTransactionStatus('ERROR');
+                setStatusMessage(state.message);
+            }
         }
     }, [state]);
 
@@ -48,8 +84,6 @@ export function PaymentForm() {
         formRef.current?.reset();
         setTransactionStatus('IDLE');
         setStatusMessage('');
-        // This is a hacky way to reset the useActionState. A better way might be a key on the form.
-        // For now, we manually clear things.
         state.message = '';
         state.success = false;
         state.data = undefined;
@@ -66,12 +100,12 @@ export function PaymentForm() {
             const result = await checkPaymentStatusAction(transRef);
             setStatusMessage(result.message);
             if (result.success) {
-                // Assuming status is one of 'PENDING', 'SUCCESSFUL', 'FAILED'
-                setTransactionStatus(result.status as Status);
-                 toast({ title: 'Status Updated', description: `Transaction is now ${result.status}.` });
+                const newStatus = result.status as Status;
+                setTransactionStatus(newStatus);
+                toast({ title: 'Status Updated', description: `Transaction is now ${newStatus}.` });
             } else {
                 setTransactionStatus('ERROR');
-                 toast({ variant: 'destructive', title: 'Status Check Failed', description: result.message });
+                toast({ variant: 'destructive', title: 'Status Check Failed', description: result.message });
             }
         });
     };
@@ -89,24 +123,24 @@ export function PaymentForm() {
         switch (transactionStatus) {
             case 'PENDING':
                 return (
-                    <Alert variant="default" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
-                        <Clock className="h-4 w-4 !text-yellow-500" />
-                        <AlertTitle>Pending PIN</AlertTitle>
-                        <AlertDescription>
-                            {statusMessage}. Ask the customer to enter their PIN to authorize the payment.
-                            {transRef && (
-                                <div className="mt-4 space-y-2">
-                                     <Label className="text-xs">Transaction Reference</Label>
-                                     <div className="flex items-center gap-2 font-mono p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
-                                        <span className="truncate flex-1">{transRef}</span>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyToClipboard(transRef)}>
-                                            <Copy className="h-4 w-4" />
-                                        </Button>
-                                     </div>
-                                </div>
-                            )}
-                        </AlertDescription>
-                    </Alert>
+                    <div className="flex flex-col items-center text-center gap-4">
+                        <CountdownTimer onTimeout={() => setTransactionStatus('TIMEOUT')} />
+                        <h3 className="font-semibold text-lg">Awaiting Customer PIN</h3>
+                        <p className="text-sm text-muted-foreground max-w-sm">
+                           Please ask the customer to enter their mobile money PIN on their phone to authorize the payment of UGX {state.data?.amount}.
+                        </p>
+                         {transRef && (
+                            <div className="w-full text-left space-y-2 pt-4">
+                                 <Label className="text-xs">Transaction Reference</Label>
+                                 <div className="flex items-center gap-2 font-mono p-2 bg-muted rounded-md">
+                                    <span className="truncate flex-1">{transRef}</span>
+                                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyToClipboard(transRef)}>
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                 </div>
+                            </div>
+                        )}
+                    </div>
                 );
             case 'SUCCESSFUL':
                 return (
@@ -132,6 +166,14 @@ export function PaymentForm() {
                         <AlertDescription>{statusMessage}</AlertDescription>
                     </Alert>
                 );
+            case 'TIMEOUT':
+                 return (
+                    <Alert variant="default" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">
+                        <Hourglass className="h-4 w-4 !text-yellow-500" />
+                        <AlertTitle>Request Timed Out</AlertTitle>
+                        <AlertDescription>The 30-second window has passed. You can manually check the status to see if the payment went through, or start a new payment.</AlertDescription>
+                    </Alert>
+                );
             default:
                 return null;
         }
@@ -149,8 +191,8 @@ export function PaymentForm() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {getStatusContent()}
-                    <div className="flex flex-wrap gap-2">
-                         {transactionStatus === 'PENDING' && (
+                    <div className="flex flex-wrap gap-2 pt-4">
+                         {(transactionStatus === 'PENDING' || transactionStatus === 'TIMEOUT') && (
                              <Button onClick={handleCheckStatus} disabled={isCheckingStatus}>
                                 {isCheckingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                                 Check Status
