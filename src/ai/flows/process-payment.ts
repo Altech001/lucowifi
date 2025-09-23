@@ -44,8 +44,11 @@ const processPaymentTool = ai.defineTool(
         const successUrl = 'https://your_domain.com/payment/success';
         const failedUrl = 'https://your_domain.com/payment/failed';
 
+        // Format amount to have two decimal places, e.g., "1000.00"
+        const formattedAmount = parseFloat(payload.amount).toFixed(2);
+
         const body = {
-            amount: payload.amount,
+            amount: formattedAmount,
             number: payload.number,
             ref: payload.ref,
             username: payload.username,
@@ -64,12 +67,14 @@ const processPaymentTool = ai.defineTool(
             if (!response.ok) {
                 const errorData = await response.text();
                 try {
+                    // Try to parse as JSON first
                     const errorJson = JSON.parse(errorData);
                      return {
                         success: false,
                         message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorJson.message || errorData}`,
                     };
                 } catch {
+                     // If parsing fails, return the raw text
                      return {
                         success: false,
                         message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorData}`,
@@ -79,6 +84,7 @@ const processPaymentTool = ai.defineTool(
 
             const responseData = await response.json();
 
+            // Check for both 'status' and 'success' keys in the response
             if (responseData.status === 'success' || responseData.success) {
                  return {
                     success: true,
