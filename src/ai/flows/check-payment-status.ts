@@ -23,7 +23,8 @@ const checkPaymentStatusTool = ai.defineTool(
         outputSchema: CheckPaymentStatusOutputSchema,
     },
     async (payload) => {
-        const url = 'https://hive-sooty-eight.vercel.app/check_status';
+        // THIS IS A PLACEHOLDER - The correct URL for status checking is unknown.
+        const url = 'https://hive-sooty-eight.vercel.app/CHECK_STATUS_URL_IS_UNKNOWN';
         
         const body = {
             trans_reference: payload.transactionReference,
@@ -41,6 +42,14 @@ const checkPaymentStatusTool = ai.defineTool(
             const responseDataText = await response.text();
 
              if (!response.ok) {
+                // Handle HTTP errors like 404, 500 etc.
+                if (response.status === 404) {
+                    return {
+                        success: false,
+                        status: 'ERROR',
+                        message: `Status check failed: The status check URL is incorrect (404 Not Found). Please configure the correct endpoint.`,
+                    };
+                }
                 return {
                     success: false,
                     status: 'ERROR',
@@ -49,6 +58,7 @@ const checkPaymentStatusTool = ai.defineTool(
             }
 
             try {
+                // Try parsing as JSON first, as this is the most common success case.
                 const responseData = JSON.parse(responseDataText);
                 const transactionStatus = responseData.TransactionStatus || 'UNKNOWN';
                 
@@ -60,6 +70,8 @@ const checkPaymentStatusTool = ai.defineTool(
                 };
 
             } catch (jsonError) {
+                 // If JSON parsing fails, the response might be XML or plain text.
+                 // This is an unknown state, so we return an error.
                  return {
                     success: false,
                     status: 'ERROR',
