@@ -85,11 +85,14 @@ export async function analyzeProfileAction(
   }
 }
 
+const fileSchema = z.instanceof(File).refine(file => file.size > 0, 'File is required.');
+
 const membershipSchema = z.object({
   name: nameSchema,
   phoneNumber: phoneSchema,
   username: z.string().min(3, { message: 'Username must be at least 3 characters.'}),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.'}),
+  document: fileSchema,
 });
 
 type MembershipState = {
@@ -98,6 +101,14 @@ type MembershipState = {
     tempUsername?: string;
     tempPassword?: string;
 }
+
+// Helper to convert file to data URI
+async function fileToDataUri(file: File): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return `data:${file.type};base64,${buffer.toString('base64')}`;
+}
+
 
 export async function createMembershipAction(
   prevState: MembershipState,
@@ -108,22 +119,28 @@ export async function createMembershipAction(
     phoneNumber: formData.get('phoneNumber'),
     username: formData.get('username'),
     password: formData.get('password'),
+    document: formData.get('document'),
   };
 
   const validation = membershipSchema.safeParse(rawFormData);
 
   if (!validation.success) {
-    return { message: validation.error.errors[0].message, success: false };
+    const error = validation.error.errors[0];
+    const message = `${error.path.join('.')}: ${error.message}`;
+    return { message, success: false };
   }
 
-  const { name, phoneNumber, username, password } = validation.data;
+  const { name, phoneNumber, username, password, document } = validation.data;
 
   try {
+    const documentDataUri = await fileToDataUri(document);
+
     const result = await membershipSignup({
       name,
       phoneNumber,
       username,
       password,
+      documentDataUri,
     });
 
     if (result.success) {

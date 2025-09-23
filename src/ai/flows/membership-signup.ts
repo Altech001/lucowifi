@@ -19,6 +19,7 @@ const MembershipSignupInputSchema = z.object({
     .describe('The user\'s WhatsApp phone number, including the country code.'),
   username: z.string().describe('The desired username for the membership.'),
   password: z.string().describe('The desired password for the membership account.'),
+  documentDataUri: z.string().describe('A data URI of the user\'s identification document.'),
 });
 export type MembershipSignupInput = z.infer<typeof MembershipSignupInputSchema>;
 
@@ -55,17 +56,55 @@ const sendWelcomeMessage = ai.defineTool(
   }
 );
 
+const analyzeDocument = ai.defineTool(
+    {
+        name: 'analyzeDocument',
+        description: 'Analyzes the uploaded document to verify the user\'s identity.',
+        inputSchema: z.object({
+            documentDataUri: z.string().describe("A data URI of the user's identification document."),
+        }),
+        outputSchema: z.object({
+            isValid: z.boolean(),
+            reason: z.string(),
+        }),
+    },
+    async ({ documentDataUri }) => {
+        // In a real app, this would use a document verification service or a more complex AI model.
+        console.log('Analyzing document...');
+        if (documentDataUri.length < 100) { // Simple check for placeholder
+             return {
+                isValid: false,
+                reason: 'Document appears to be invalid or empty.',
+            };
+        }
+        return {
+            isValid: true,
+            reason: 'Document appears to be valid.',
+        };
+    }
+);
+
 
 const membershipSignupFlow = ai.defineFlow(
   {
     name: 'membershipSignupFlow',
     inputSchema: MembershipSignupInputSchema,
     outputSchema: MembershipSignupOutputSchema,
+    tools: [sendWelcomeMessage, analyzeDocument],
   },
   async (input) => {
     // In a real app, you would save the user to a database here.
     console.log(`Creating membership for ${input.name} with phone ${input.phoneNumber}, username ${input.username}`);
 
+    const docAnalysis = await analyzeDocument({ documentDataUri: input.documentDataUri });
+
+    if (!docAnalysis.isValid) {
+        return {
+            success: false,
+            message: `Document verification failed: ${docAnalysis.reason}`,
+        }
+    }
+    
     // Call the tool to send a welcome message.
     const welcomeResult = await sendWelcomeMessage({
       phoneNumber: input.phoneNumber,

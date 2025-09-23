@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, KeyRound, User, Lock, PartyPopper, Home, ArrowLeft } from 'lucide-react';
+import { UserPlus, KeyRound, User, Lock, PartyPopper, Home, ArrowLeft, ArrowRight, FileCheck, Eye, EyeOff } from 'lucide-react';
 
 const initialState = {
   message: '',
@@ -25,7 +25,12 @@ export function MembershipForm() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>(new FormData());
+  const [formData, setFormData] = useState(new FormData());
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fileName, setFileName] = useState('');
+
 
   useEffect(() => {
     if (state.message && !state.success) {
@@ -34,14 +39,23 @@ export function MembershipForm() {
         title: 'Signup Failed',
         description: state.message,
       });
-      // Reset to first step on error
-      setStep(1);
+      // Allow user to correct error
     }
   }, [state, toast]);
 
   const handleNext = () => {
     const currentForm = formRef.current;
     if (currentForm) {
+        if (step === 2) {
+            if (password !== confirmPassword) {
+                toast({ variant: 'destructive', title: 'Error', description: 'Passwords do not match.' });
+                return;
+            }
+             if (password.length < 6) {
+                toast({ variant: 'destructive', title: 'Error', description: 'Password must be at least 6 characters.' });
+                return;
+            }
+        }
       const newFormData = new FormData(currentForm);
       const mergedFormData = new FormData();
 
@@ -97,11 +111,15 @@ export function MembershipForm() {
   }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-6">
+    <form ref={formRef} action={formAction} className="space-y-6" encType="multipart/form-data">
        {/* Hidden inputs to carry over data from previous steps */}
-       {step > 1 && Array.from(formData.entries()).map(([key, value]) => {
-          if (key !== 'username' && key !== 'password' && typeof value === 'string') {
-              return <input type="hidden" name={key} key={key} value={value} />;
+       {Array.from(formData.entries()).map(([key, value]) => {
+          if (value instanceof File) {
+            // Cannot set File object as hidden input value directly, handled by main file input
+            return null;
+          }
+          if (key !== 'password' && key !== 'confirmPassword') {
+              return <input type="hidden" name={key} key={key} value={value as string} />;
           }
           return null;
        })}
@@ -113,20 +131,18 @@ export function MembershipForm() {
           <div className="h-1 bg-muted rounded-full"></div>
           <div
             className="absolute top-0 left-0 h-1 bg-primary rounded-full transition-all duration-300"
-            style={{ width: `${((step - 1) / 1) * 100}%` }}
+            style={{ width: `${((step - 1) / 2) * 100}%` }}
           ></div>
-          <div
-            className={`absolute top-1/2 -translate-y-1/2 rounded-full w-4 h-4 border-2 ${step >= 1 ? 'bg-primary border-primary' : 'bg-muted border-muted-foreground'}`}
-            style={{ left: '0%' }}
-          ></div>
-          <div
-             className={`absolute top-1/2 -translate-y-1/2 rounded-full w-4 h-4 border-2 ${step >= 2 ? 'bg-primary border-primary' : 'bg-muted border-muted-foreground'}`}
-            style={{ left: '100%' }}
-          ></div>
+           <div className="absolute flex justify-between w-full top-1/2 -translate-y-1/2">
+                <div className={`w-4 h-4 rounded-full border-2 ${step >= 1 ? 'bg-primary border-primary' : 'bg-muted border-muted-foreground'}`}></div>
+                <div className={`w-4 h-4 rounded-full border-2 ${step >= 2 ? 'bg-primary border-primary' : 'bg-muted border-muted-foreground'}`}></div>
+                <div className={`w-4 h-4 rounded-full border-2 ${step >= 3 ? 'bg-primary border-primary' : 'bg-muted border-muted-foreground'}`}></div>
+           </div>
         </div>
         <div className="flex justify-between text-xs mt-2 text-muted-foreground">
-            <span className={step >= 1 ? 'text-primary font-semibold' : ''}>Personal Info</span>
+            <span className={step >= 1 ? 'text-primary font-semibold' : ''}>Personal</span>
             <span className={step >= 2 ? 'text-primary font-semibold' : ''}>Account</span>
+            <span className={step >= 3 ? 'text-primary font-semibold' : ''}>Review</span>
         </div>
       </div>
 
@@ -153,12 +169,52 @@ export function MembershipForm() {
             <Label htmlFor="username" className="flex items-center gap-2 text-base"><User className="h-4 w-4" />Choose a Username</Label>
             <Input id="username" name="username" type="text" placeholder="johndoe" required className="text-lg" defaultValue={formData.get('username')?.toString()} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <Label htmlFor="password" className="flex items-center gap-2 text-base"><Lock className="h-4 w-4" />Create a Password</Label>
-            <Input id="password" name="password" type="password" placeholder="••••••••" required className="text-lg" />
+            <Input id="password" name="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" required className="text-lg pr-10" onChange={(e) => setPassword(e.target.value)} />
+             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </Button>
+          </div>
+           <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="flex items-center gap-2 text-base"><Lock className="h-4 w-4" />Confirm Password</Label>
+            <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" required className="text-lg" onChange={(e) => setConfirmPassword(e.target.value)} />
           </div>
         </div>
       )}
+
+       {step === 3 && (
+        <div className="space-y-6 animate-in fade-in-30 duration-500">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Review Your Details</CardTitle>
+                    <CardDescription>Please confirm your information is correct before submitting.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Name:</span>
+                        <span className="font-semibold">{formData.get('name')}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Phone:</span>
+                        <span className="font-semibold">{formData.get('phoneNumber')}</span>
+                    </div>
+                     <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Username:</span>
+                        <span className="font-semibold">{formData.get('username')}</span>
+                    </div>
+                </CardContent>
+            </Card>
+            <div className="space-y-2">
+                <Label htmlFor="document" className="flex items-center gap-2 text-base"><FileCheck className="h-4 w-4" />Upload ID Document</Label>
+                <Input id="document" name="document" type="file" required accept="image/*,.pdf" onChange={(e) => setFileName(e.target.files?.[0]?.name ?? '')} />
+                <p className="text-sm text-muted-foreground">
+                   {fileName ? `File selected: ${fileName}` : 'Please upload a PDF or image of your ID.'}
+                </p>
+            </div>
+        </div>
+      )}
+
 
       <div className="flex justify-between items-center pt-4">
         {step > 1 ? (
@@ -167,14 +223,15 @@ export function MembershipForm() {
             Back
           </Button>
         ) : <div></div>}
-        {step < 2 ? (
+        {step < 3 ? (
           <Button type="button" onClick={handleNext}>
             Next
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <SubmitButton>
             <UserPlus className="mr-2 h-5 w-5" />
-            Sign Up for Membership
+            Confirm & Sign Up
           </SubmitButton>
         )}
       </div>
