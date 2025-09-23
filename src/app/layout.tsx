@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import ThemeProvider from '@/components/providers/theme-provider';
+import { Providers } from '@/components/providers';
 import { Header } from '@/components/header';
 import { Toaster } from '@/components/ui/toaster';
 import { AnnouncementBar } from '@/components/announcement-bar';
@@ -28,12 +28,7 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <Providers>
           <div className="min-h-screen flex flex-col">
             <Header />
             <AnnouncementBar announcements={announcements} />
@@ -42,7 +37,7 @@ export default async function RootLayout({
           <Toaster />
           <AnnouncementDialog />
           <PromotionsDialog promotions={promotions} />
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
