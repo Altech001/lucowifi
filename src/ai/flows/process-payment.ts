@@ -64,16 +64,22 @@ const processPaymentTool = ai.defineTool(
             
             if (!response.ok) {
                 const errorData = await response.text();
-                return {
-                    success: false,
-                    message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorData}`,
-                };
+                try {
+                    const errorJson = JSON.parse(errorData);
+                     return {
+                        success: false,
+                        message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorJson.message || errorData}`,
+                    };
+                } catch {
+                     return {
+                        success: false,
+                        message: `Payment provider returned an error: ${response.status} ${response.statusText}. Details: ${errorData}`,
+                    };
+                }
             }
 
             const responseData = await response.json();
 
-            // Based on typical API responses, you might need to adjust this logic.
-            // Assuming the API returns a success flag or a specific status.
             if (responseData.status === 'success' || responseData.success) {
                  return {
                     success: true,
@@ -115,4 +121,3 @@ const processPaymentFlow = ai.defineFlow(
     return result;
   }
 );
-
