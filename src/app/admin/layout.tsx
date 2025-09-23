@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { BarChart, Home, Ticket, Users, UserCog } from "lucide-react";
+import { BarChart, Home, Ticket, Users, UserCog, LogOut } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +9,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { logout } from "@/app/actions";
+import { Button } from "@/components/ui/button";
 
 
 export default function AdminLayout({
@@ -55,6 +57,14 @@ export default function AdminLayout({
             <BarChart className="h-5 w-5" />
             <span className="sr-only">Analyze Profiles</span>
           </Link>
+        </nav>
+        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
+            <form action={logout}>
+                <button className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+                    <LogOut className="h-5 w-5" />
+                    <span className="sr-only">Logout</span>
+                </button>
+            </form>
         </nav>
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-16">

@@ -13,6 +13,7 @@ import { db } from '@/lib/firebase';
 import { ref, set, push, update, remove, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
 import { getVoucherStatus, getAllVouchersWithPackageInfo } from '@/lib/database-data';
+import { cookies } from 'next/headers';
 
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
@@ -578,10 +579,37 @@ export async function rejectMembershipAction(
     return { message: "Failed to reject membership.", success: false };
   }
 }
-    
 
-    
+// Admin Login
+type AdminLoginState = {
+  message: string;
+  success: boolean;
+};
 
-    
+const ADMIN_PASSWORD = "Albertine";
 
-    
+export async function login(
+  prevState: AdminLoginState,
+  formData: FormData
+): Promise<AdminLoginState> {
+  const password = formData.get('password');
+
+  if (password === ADMIN_PASSWORD) {
+    const cookieStore = cookies();
+    cookieStore.set('luco-admin-auth', 'true', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
+    });
+    redirect('/admin');
+  }
+
+  return { message: 'Invalid password. Please try again.', success: false };
+}
+
+export async function logout() {
+  const cookieStore = cookies();
+  cookieStore.delete('luco-admin-auth');
+  redirect('/admin/login');
+}
