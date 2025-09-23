@@ -6,6 +6,7 @@ import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-f
 
 export async function getPackages(): Promise<Package[]> {
   const dbRef = ref(db);
+  let packageList: Package[] = [];
   try {
     const snapshot = await get(child(dbRef, 'packages'));
     if (snapshot.exists()) {
@@ -31,16 +32,26 @@ export async function getPackages(): Promise<Package[]> {
         };
       });
 
-      const packageList = await Promise.all(packageListPromises);
-      return packageList as Package[];
+      packageList = await Promise.all(packageListPromises);
     } else {
       console.log("No data available for packages");
-      return [];
     }
   } catch (error) {
     console.error("Error fetching packages:", error);
-    return [];
   }
+
+  // Statically add the monthly membership package
+  const membershipPackage: Package = {
+    slug: 'monthly-membership',
+    name: 'Monthly Membership',
+    price: 30000,
+    description: 'Unlimited access for a whole month.',
+    details: ['Unlimited high-speed internet', '24/7 support'],
+    imageId: 'gold-package', 
+    durationHours: 24 * 30, // Approx 30 days
+  };
+
+  return [...packageList, membershipPackage];
 }
 
 export function getVoucherStatus(voucher: Voucher | { usedAt?: string }, durationHours: number): { status: 'Active' | 'Expired' | 'Available', expiry: string | null } {

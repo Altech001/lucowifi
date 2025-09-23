@@ -59,7 +59,7 @@ export function PackageGrid({ packages }: { packages: Package[] }) {
             <CardContent className="flex-1 flex flex-col justify-center items-center p-4 pt-0">
               <div className="text-center">
                 <span className="text-2xl sm:text-3xl font-bold font-headline">UGX {pkg.price.toLocaleString()}</span>
-                {pkg.slug.includes('month') && <span className="text-xs text-muted-foreground block"> / month</span>}
+                {pkg.slug === 'monthly-membership' && <span className="text-xs text-muted-foreground block"> / month</span>}
               </div>
             </CardContent>
             <CardFooter className="p-4 bg-muted/50 border-t mt-auto">
