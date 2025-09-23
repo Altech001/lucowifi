@@ -48,6 +48,13 @@ const sendWhatsappMessage = ai.defineTool(
     // Placeholder implementation for sending the WhatsApp message.
     // In a real application, this would integrate with a WhatsApp Business API provider.
     console.log(`Sending WhatsApp message to ${input.phoneNumber}: ${input.message}`);
+    // Simulate a potential failure
+    if (input.phoneNumber.includes('FAIL')) {
+        return {
+            success: false,
+            message: `Simulated failure sending message to ${input.phoneNumber}`
+        }
+    }
     return {
       success: true,
       message: `Message sent successfully to ${input.phoneNumber}`,
@@ -61,12 +68,12 @@ const whatsappVoucherPrompt = ai.definePrompt({
   input: {schema: SendWhatsappVoucherInputSchema},
   prompt: `You are in charge of sending a voucher code to a user's WhatsApp number.
 
-The voucher code is: {{{voucherCode}}}
-The user's phone number is: {{{phoneNumber}}}
+Your task is to send the following voucher code to the user's phone number.
 
-Ensure that the phone number includes the country code.
+Voucher Code: {{{voucherCode}}}
+Phone Number: {{{phoneNumber}}}
 
-Use the sendWhatsappMessage tool to send the voucher code to the user's WhatsApp number.
+Use the sendWhatsappMessage tool to send the message "Your Luco WIFI voucher code is: {{{voucherCode}}}".
 `,
 });
 
@@ -77,23 +84,30 @@ const sendWhatsappVoucherFlow = ai.defineFlow(
     outputSchema: SendWhatsappVoucherOutputSchema,
   },
   async input => {
-    const {voucherCode, phoneNumber} = input;
+    const llmResponse = await whatsappVoucherPrompt(input);
 
-    const promptResult = await whatsappVoucherPrompt({
-      voucherCode,
-      phoneNumber,
-    });
-
-    // Extract the result from the tool call
-    const toolCallResult = promptResult.toolCalls?.[0]?.result as SendWhatsappVoucherOutput | undefined;
-
-    if (toolCallResult) {
-      return toolCallResult;
+    const toolRequests = llmResponse.toolRequests();
+    if (toolRequests.length === 0) {
+      return {
+        success: false,
+        message: 'The model did not request to send a message.',
+      };
     }
+    
+    // We are only expecting one tool request from the prompt.
+    const toolRequest = toolRequests[0];
+    const toolResponse = await toolRequest.run();
 
-    return {
-      success: false,
-      message: 'Failed to send voucher code.',
-    };
+    if (toolResponse.success) {
+      return {
+        success: true,
+        message: toolResponse.message,
+      };
+    } else {
+       return {
+        success: false,
+        message: toolResponse.message || 'Failed to send voucher code via the tool.',
+      };
+    }
   }
 );
