@@ -43,7 +43,7 @@ export function PaymentForm() {
 
     const transactionStatus = state.data?.TransactionStatus;
 
-    if (state.success) {
+    if (state.success && state.data) {
          return (
             <Card>
                 <CardHeader>
@@ -58,7 +58,7 @@ export function PaymentForm() {
                             <Clock className="h-4 w-4 !text-yellow-500" />
                             <AlertTitle>Pending PIN</AlertTitle>
                             <AlertDescription>
-                                {state.message} Please ask the customer to enter their PIN on their phone to complete the payment.
+                                {state.message} Please ask the customer to enter their PIN on their phone to complete the payment. The UI will not update automatically.
                             </AlertDescription>
                         </Alert>
                      ) : (
