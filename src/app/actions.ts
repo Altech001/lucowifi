@@ -1,8 +1,4 @@
 
-
-
-
-
 'use server';
 
 import { z } from 'zod';
@@ -885,6 +881,20 @@ export async function updatePopupSettingsAction(prevState: PopupSettingsState, f
 
 
 // Payment Actions
+const ProcessPaymentInputSchema = z.object({
+  amount: z.string().min(1, { message: 'Amount is required.' }),
+  number: z.string().min(10, { message: 'Phone number seems too short.' }),
+  username: z.string(),
+  password: z.string(),
+});
+export type ProcessPaymentInput = z.infer<typeof ProcessPaymentInputSchema>;
+
+export type ProcessPaymentOutput = {
+    success: boolean;
+    message: string;
+    data?: any;
+}
+
 type PaymentActionState = {
   message: string;
   success: boolean;
@@ -909,9 +919,15 @@ export async function initiatePaymentAction(prevState: PaymentActionState, formD
     }
 
     const { amount, number } = validation.data;
+    const username = process.env.PAYMENT_API_USERNAME;
+    const password = process.env.PAYMENT_API_PASSWORD;
+
+    if (!username || !password) {
+        return { success: false, message: 'Payment credentials are not configured.' };
+    }
 
     try {
-        const result = await processPayment({ amount, number });
+        const result = await processPayment({ amount, number, username, password });
         return {
             success: result.success,
             message: result.message,

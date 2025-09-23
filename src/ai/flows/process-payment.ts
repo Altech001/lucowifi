@@ -26,16 +26,15 @@ const processPaymentTool = ai.defineTool(
             amount: z.string(),
             number: z.string(),
             refer: z.string(),
+            username: z.string(),
+            password: z.string(),
         }),
         outputSchema: z.custom<ProcessPaymentOutput>(),
     },
     async (payload) => {
         const url = 'https://hive-sooty-eight.vercel.app/process_payment';
         
-        const username = process.env.PAYMENT_API_USERNAME;
-        const password = process.env.PAYMENT_API_PASSWORD;
-
-        if (!username || !password) {
+        if (!payload.username || !payload.password) {
             const message = 'Payment provider credentials are not configured in environment variables.';
             console.error(message);
             return { success: false, message };
@@ -49,8 +48,8 @@ const processPaymentTool = ai.defineTool(
             amount: payload.amount,
             number: payload.number,
             refer: payload.refer,
-            username: username,
-            password: password,
+            username: payload.username,
+            password: payload.password,
             'success-re-url': successUrl,
             'failed-re-url': failedUrl,
         };
@@ -116,7 +115,12 @@ const processPaymentFlow = ai.defineFlow(
     // Generate a unique reference for the transaction
     const refer = `luco-wifi-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    const result = await processPaymentTool({ ...input, refer });
+    const result = await processPaymentTool({
+        ...input,
+        refer,
+        username: input.username,
+        password: input.password
+    });
     
     return result;
   }
