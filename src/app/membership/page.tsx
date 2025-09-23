@@ -5,7 +5,7 @@ import { UserPlus } from "lucide-react";
 export default function MembershipPage() {
     return (
         <div className="container mx-auto px-4 py-8 sm:py-12 flex items-center justify-center">
-            <Card className="w-full max-w-2xl">
+            <Card className="w-full max-w-2xl border-0">
                 <CardHeader>
                     <div className="flex items-center gap-3">
                         <UserPlus className="h-6 w-6" />
