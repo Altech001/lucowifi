@@ -37,15 +37,11 @@ export function AnnouncementDialog() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const hasSeenAnnouncement = sessionStorage.getItem('announcementSeen');
-    if (!hasSeenAnnouncement) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        sessionStorage.setItem('announcementSeen', 'true');
-      }, 1500); // Delay opening for 1.5 seconds
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 1500); // Delay opening for 1.5 seconds
 
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
 
   return (
