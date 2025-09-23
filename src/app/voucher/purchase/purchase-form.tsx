@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { purchaseVoucherAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const forcePurchaseRef = useRef<HTMLInputElement>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
     // Only show toast for actual purchase failures, not for the "active voucher found" message.
@@ -39,14 +40,15 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
         description: state.message,
       });
     }
+     // If an active voucher is found, store the phone number that was used.
+    if (state.activeVoucherCode && formRef.current) {
+        const phoneInput = formRef.current.elements.namedItem('phoneNumber') as HTMLInputElement;
+        if(phoneInput) {
+            setPhoneNumber(phoneInput.value);
+        }
+    }
   }, [state, toast]);
 
-  const handleForcePurchase = () => {
-    if (formRef.current && forcePurchaseRef.current) {
-        forcePurchaseRef.current.value = 'true';
-        formRef.current.requestSubmit();
-    }
-  }
 
   if (state.activeVoucherCode) {
     return (
@@ -76,9 +78,9 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
                 <p>
                     If you still want to buy a new voucher, you can proceed below.
                 </p>
-                <form action={formAction} ref={formRef}>
+                <form action={formAction}>
                      <input type="hidden" name="packageSlug" value={packageSlug} />
-                     <input type="hidden" name="phoneNumber" value={formRef.current?.phoneNumber.value} />
+                     <input type="hidden" name="phoneNumber" value={phoneNumber} />
                      <input type="hidden" name="forcePurchase" value="true" />
                     <SubmitButton className="w-full" size="lg">
                         <ShoppingCart className="mr-2 h-5 w-5" />
