@@ -102,11 +102,18 @@ const saveMembershipApplication = ai.defineTool(
             const membershipsRef = ref(db, 'memberships');
             const newMembershipRef = push(membershipsRef);
             
-            await set(newMembershipRef, {
-                ...application,
+            // Create a payload that includes all fields from the input, including the documentDataUri
+            const payloadToSave = {
+                name: application.name,
+                phoneNumber: application.phoneNumber,
+                username: application.username,
+                password: application.password,
+                documentDataUri: application.documentDataUri,
                 status: 'pending',
                 createdAt: new Date().toISOString(),
-            });
+            };
+
+            await set(newMembershipRef, payloadToSave);
 
             return {
                 success: true,
