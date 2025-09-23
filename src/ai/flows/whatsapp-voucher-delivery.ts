@@ -33,7 +33,7 @@ export async function sendWhatsappVoucher(input: SendWhatsappVoucherInput): Prom
 
 // Helper function to format phone number
 function formatPhoneNumber(phoneNumber: string): string {
-  // Remove any spaces, dashes or other characters
+  // Remove any spaces, dashes, or other non-digit characters, but keep the leading '+' if it exists
   const cleaned = phoneNumber.replace(/\D/g, '');
   
   // If number starts with 0, replace it with 256
@@ -41,12 +41,18 @@ function formatPhoneNumber(phoneNumber: string): string {
     return '256' + cleaned.substring(1);
   }
   
-  // If number starts with +, remove it
-  if (cleaned.startsWith('+')) {
-      return cleaned.substring(1);
+  // If number starts with +, remove it and check length
+  if (phoneNumber.startsWith('+')) {
+      return cleaned;
   }
   
-  return cleaned;
+  // If it starts with 256, it's likely correct but missing the + which we dont need for this API
+  if (cleaned.startsWith('256')) {
+    return cleaned;
+  }
+  
+  // For any other case, assume it's a local number needing the prefix
+  return '256' + cleaned;
 }
 
 const sendWhatsappMessage = ai.defineTool(
