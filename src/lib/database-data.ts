@@ -1,8 +1,9 @@
 
 
+
 import { db } from './firebase';
 import { ref, get, child } from 'firebase/database';
-import type { Package, Voucher, Membership, Promotion } from './definitions';
+import type { Package, Voucher, Membership, Promotion, Announcement } from './definitions';
 import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-fns';
 
 export async function getPackages(): Promise<Package[]> {
@@ -190,6 +191,25 @@ export async function getPromotions(): Promise<Promotion[]> {
         return promotionList;
     } catch (error) {
         console.error("Error fetching promotions:", error);
+        return [];
+    }
+}
+
+export async function getAnnouncements(): Promise<Announcement[]> {
+    const dbRef = ref(db, 'announcements');
+    try {
+        const snapshot = await get(dbRef);
+        if (snapshot.exists()) {
+            const announcementsData = snapshot.val();
+            const announcementList: Announcement[] = Object.keys(announcementsData).map(key => ({
+                id: key,
+                ...announcementsData[key],
+            })).sort((a, b) => parseISO(b.createdAt).getTime() - parseISO(a.createdAt).getTime());
+            return announcementList;
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching announcements:", error);
         return [];
     }
 }

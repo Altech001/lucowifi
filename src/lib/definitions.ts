@@ -40,3 +40,11 @@ export type Promotion = {
   packageName?: string;
   packageDescription?: string;
 };
+
+export type Announcement = {
+  id: string;
+  text: string;
+  imageUrl?: string;
+  showImage?: boolean;
+  createdAt: string;
+};

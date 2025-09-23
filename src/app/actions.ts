@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -793,5 +794,58 @@ export async function generateAIMessageAction(messageType: string): Promise<Gene
     } catch(e) {
         console.error("AI message generation failed:", e);
         return { message: 'An unexpected error occurred during AI generation.', success: false };
+    }
+}
+
+// Announcement Actions
+type AnnouncementActionState = {
+  message: string;
+  success: boolean;
+};
+
+export async function addAnnouncementAction(prevState: AnnouncementActionState, formData: FormData): Promise<AnnouncementActionState> {
+    const text = formData.get('text') as string;
+    const imageUrl = formData.get('imageUrl') as string;
+    const showImage = formData.get('showImage') === 'on';
+
+    if (!text) {
+        return { message: 'Announcement text is required.', success: false };
+    }
+
+    try {
+        const announcementsRef = ref(db, 'announcements');
+        const newAnnouncementRef = push(announcementsRef);
+        await set(newAnnouncementRef, {
+            text,
+            imageUrl: imageUrl || null,
+            showImage,
+            createdAt: new Date().toISOString(),
+        });
+        
+        revalidatePath('/admin/settings');
+        return { message: 'Announcement added successfully!', success: true };
+
+    } catch (e) {
+        console.error("Failed to add announcement", e);
+        return { message: 'Failed to add announcement.', success: false };
+    }
+}
+
+export async function deleteAnnouncementAction(formData: FormData): Promise<AnnouncementActionState> {
+    const announcementId = formData.get('announcementId') as string;
+
+    if (!announcementId) {
+        return { message: 'Announcement ID is missing.', success: false };
+    }
+
+    try {
+        const announcementRef = ref(db, `announcements/${announcementId}`);
+        await remove(announcementRef);
+
+        revalidatePath('/admin/settings');
+        return { message: 'Announcement deleted successfully.', success: true };
+    } catch(e) {
+        console.error("Failed to delete announcement", e);
+        return { message: 'Failed to delete announcement.', success: false };
     }
 }

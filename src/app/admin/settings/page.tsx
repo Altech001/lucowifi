@@ -1,5 +1,6 @@
 
-import { getPackages, getPromotions } from "@/lib/database-data";
+
+import { getPackages, getPromotions, getAnnouncements } from "@/lib/database-data";
 import { SettingsForm } from "./settings-form";
 import {
   Breadcrumb,
@@ -15,6 +16,7 @@ import { Settings } from "lucide-react";
 export default async function SettingsPage() {
     const packages = await getPackages();
     const promotions = await getPromotions();
+    const announcements = await getAnnouncements();
 
     return (
         <div className="space-y-4">
@@ -34,7 +36,7 @@ export default async function SettingsPage() {
                 <h1 className="text-2xl font-semibold font-headline">Application Settings</h1>
             </div>
             
-            <SettingsForm packages={packages} promotions={promotions} />
+            <SettingsForm packages={packages} promotions={promotions} announcements={announcements} />
         </div>
     )
 }
