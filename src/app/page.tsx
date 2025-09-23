@@ -1,5 +1,4 @@
 import { packages } from "@/lib/data";
-import { Wifi, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
   Card,
@@ -8,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
 
 export default function Home() {
   return (
@@ -22,58 +21,34 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {packages.map((pkg) => (
-          <Card key={pkg.slug} className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="font-headline text-2xl">{pkg.name}</CardTitle>
-              <CardDescription>{pkg.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
-              <div className="mb-6">
-                <span className="text-4xl font-bold font-headline">UGX {pkg.price}</span>
-                {pkg.slug.includes('month') && <span className="text-muted-foreground text-sm"> / month</span>}
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                {pkg.details.map((detail, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    <span>{detail}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-auto">
-                <Button asChild className="w-full">
-                  <Link href={`/packages/${pkg.slug}`}>
-                    Choose Plan <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <Link href={`/packages/${pkg.slug}`} key={pkg.slug} className="flex">
+            <Card className="flex flex-col w-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+              <CardHeader>
+                <CardTitle className="font-headline text-xl">{pkg.name}</CardTitle>
+                <CardDescription className="text-sm">{pkg.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold font-headline">UGX {pkg.price}</span>
+                    {pkg.slug.includes('month') && <span className="text-muted-foreground text-xs"> / month</span>}
+                  </div>
+                  <ul className="space-y-2 text-xs text-muted-foreground">
+                    {pkg.details.map((detail, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
-  );
-}
-
-// Added CheckCircle icon for package details
-function CheckCircle(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
   );
 }
