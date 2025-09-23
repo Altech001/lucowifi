@@ -35,6 +35,8 @@ export default function Home() {
                     <span className="text-2xl font-bold font-headline">UGX {pkg.price}</span>
                     {pkg.slug.includes('month') && <span className="text-muted-foreground text-xs"> / month</span>}
                   </div>
+                </div>
+                <div>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     {pkg.details.map((detail, index) => (
                       <li key={index} className="flex items-center gap-2">
