@@ -1,4 +1,5 @@
 
+
 // The consumer key and secret are sensitive and should be stored in environment variables.
 interface PesapalConfig {
   consumerKey: string;
