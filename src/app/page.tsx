@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -21,43 +22,58 @@ export default function Home() {
         </p>
       </header>
 
-      <Card className="max-w-3xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center gap-2 text-2xl font-semibold font-headline text-foreground">
-            <Wifi className="text-primary" />
-            <CardTitle>Available Packages</CardTitle>
-          </div>
-          <CardDescription>Select a plan to continue.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {packages.map((pkg) => (
-              <Link
-                key={pkg.slug}
-                href={`/packages/${pkg.slug}`}
-                className="block"
-              >
-                <div className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                  <div>
-                    <h3 className="font-semibold text-lg group-hover:text-primary">
-                      {pkg.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {pkg.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-semibold text-primary text-lg whitespace-nowrap">
-                      ${pkg.price}
-                    </span>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {packages.map((pkg) => (
+          <Card key={pkg.slug} className="flex flex-col">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl">{pkg.name}</CardTitle>
+              <CardDescription>{pkg.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <div className="mb-6">
+                <span className="text-4xl font-bold font-headline">${pkg.price}</span>
+                {pkg.slug.includes('month') && <span className="text-muted-foreground text-sm"> / month</span>}
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground mb-6">
+                {pkg.details.map((detail, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    <span>{detail}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto">
+                <Button asChild className="w-full">
+                  <Link href={`/packages/${pkg.slug}`}>
+                    Choose Plan <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
+  );
+}
+
+// Added CheckCircle icon for package details
+function CheckCircle(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
   );
 }
