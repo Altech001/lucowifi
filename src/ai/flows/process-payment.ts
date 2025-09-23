@@ -44,11 +44,11 @@ const processPaymentTool = ai.defineTool(
         const body = {
             amount: formattedAmount,
             number: payload.number,
-            refer: payload.ref,
+            ref: payload.ref, // Corrected from 'refer'
             username: payload.username,
             password: payload.password,
-            'success-re-url': successUrl,
-            'failed-re-url': failedUrl,
+            success: successUrl, // Corrected from 'success-re-url'
+            failed: failedUrl,   // Corrected from 'failed-re-url'
         };
 
         try {
