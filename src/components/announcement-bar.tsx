@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,7 +11,7 @@ type AnnouncementBarProps = {
   announcements: Announcement[];
 };
 
-export function AnnouncementBar({ announcements }: AnnouncementBarProps) {
+export function AnnouncementBar({ announcements = [] }: AnnouncementBarProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
