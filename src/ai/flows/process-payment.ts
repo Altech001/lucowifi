@@ -12,6 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import type { ProcessPaymentInput, ProcessPaymentOutput } from '@/app/actions';
+import fetch from 'node-fetch';
 
 
 export async function processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentOutput> {
@@ -40,11 +41,8 @@ const processPaymentTool = ai.defineTool(
             return { success: false, message };
         }
 
-        // Use valid, non-placeholder URLs.
         const successUrl = 'https://www.google.com/search?q=success';
         const failedUrl = 'https://www.google.com/search?q=failed';
-
-        // Format amount to be a string of an integer.
         const formattedAmount = parseInt(payload.amount, 10).toString();
 
         const body = {
@@ -75,7 +73,6 @@ const processPaymentTool = ai.defineTool(
 
             try {
                 const responseData = JSON.parse(responseDataText);
-                // Check for both 'status' and 'success' keys in the response
                 if (responseData.status === 'success' || responseData.success || responseData.message === 'Payment successful') {
                      return {
                         success: true,
@@ -90,8 +87,6 @@ const processPaymentTool = ai.defineTool(
                     };
                 }
             } catch (jsonError) {
-                // If parsing fails, it might be a non-JSON success response.
-                // We'll consider it a success if the HTTP status is OK.
                  return {
                     success: true,
                     message: 'Payment initiated. Response was not in JSON format.',
@@ -118,7 +113,6 @@ const processPaymentFlow = ai.defineFlow(
     outputSchema: z.custom<ProcessPaymentOutput>(),
   },
   async (input) => {
-    // Generate a unique reference for the transaction
     const ref = `luco-wifi-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     const result = await processPaymentTool({
