@@ -506,25 +506,30 @@ export async function findMembershipByUsername(prevState: LoginState, formData: 
     }
 
     try {
-        const q = query(ref(db, 'memberships'), orderByChild('username'), equalTo(username), limitToFirst(1));
-        const snapshot = await get(q);
+        const membershipsRef = ref(db, 'memberships');
+        const snapshot = await get(membershipsRef);
 
         if (snapshot.exists()) {
-            const data = snapshot.val();
-            const membershipId = Object.keys(data)[0];
-            const membershipData = data[membershipId];
+            const allMemberships = snapshot.val();
+            const foundEntry = Object.values(allMemberships).find(
+                (member: any) => member.username === username
+            );
 
-            return {
-                message: 'Membership found.',
-                success: true,
-                credentials: {
-                    username: membershipData.username,
-                    password: membershipData.password,
+            if (foundEntry) {
+                 const membershipData = foundEntry as any;
+                 return {
+                    message: 'Membership found.',
+                    success: true,
+                    credentials: {
+                        username: membershipData.username,
+                        password: membershipData.password,
+                    }
                 }
             }
-        } else {
-            return { message: 'No membership found with that username.', success: false };
         }
+        
+        return { message: 'No membership found with that username.', success: false };
+
     } catch(e) {
         console.error("Failed to query membership", e);
         return { message: 'An error occurred while searching for your membership.', success: false };
@@ -537,3 +542,4 @@ export async function findMembershipByUsername(prevState: LoginState, formData: 
 
     
 
+    
