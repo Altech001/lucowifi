@@ -55,6 +55,17 @@ const initialState = {
     success: false,
 };
 
+function FormattedDate({ dateString }: { dateString: string }) {
+    const [formattedDate, setFormattedDate] = useState<string | null>(null);
+
+    useEffect(() => {
+        setFormattedDate(format(new Date(dateString), "dd MMM yyyy, HH:mm"));
+    }, [dateString]);
+
+    return <>{formattedDate || '...'}</>;
+}
+
+
 export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
   const [filter, setFilter] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -173,7 +184,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                        {format(new Date(voucher.createdAt), "dd MMM yyyy, HH:mm")}
+                        <FormattedDate dateString={voucher.createdAt} />
                     </TableCell>
                     <TableCell className="text-right">
                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(voucher)}>
