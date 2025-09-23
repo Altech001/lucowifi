@@ -1,15 +1,15 @@
 
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
-import { purchaseVoucherAction } from '@/app/actions';
+import { useActionState, useEffect, useState, useTransition } from 'react';
+import { purchaseVoucherAction, resendVoucherAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info, Ticket, Clock, ShoppingCart, History } from 'lucide-react';
+import { Info, Ticket, Clock, ShoppingCart, History, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -22,6 +22,33 @@ const initialState = {
 
 type PurchaseFormProps = {
     packageSlug: string;
+}
+
+function ResendButton({ phoneNumber, voucherCode }: { phoneNumber: string, voucherCode: string }) {
+    const [isPending, startTransition] = useTransition();
+    const { toast } = useToast();
+
+    const handleResend = () => {
+        startTransition(async () => {
+            const result = await resendVoucherAction({ phoneNumber, voucherCode });
+            toast({
+                variant: result.success ? 'default' : 'destructive',
+                title: result.success ? 'Message Sent' : 'Failed to Send',
+                description: result.message
+            });
+        });
+    }
+
+    return (
+        <Button size="sm" variant="outline" onClick={handleResend} disabled={isPending}>
+            {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <Send className="mr-2 h-4 w-4" />
+            )}
+            Resend
+        </Button>
+    )
 }
 
 export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
@@ -81,6 +108,11 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
                                     </span>
                                     <span>{voucher.expiry || 'Not yet activated'}</span>
                                 </div>
+                                {voucher.status === 'Active' && (
+                                     <div className="pt-2 flex justify-end">
+                                         <ResendButton phoneNumber={phoneNumber} voucherCode={voucher.code} />
+                                     </div>
+                                )}
                             </CardContent>
                         </Card>
                     ))}

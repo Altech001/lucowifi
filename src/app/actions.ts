@@ -712,3 +712,37 @@ export async function exportUserPhonesAction(): Promise<{ data: string, success:
         return { data: '', success: false, message: 'An unexpected error occurred during export.' };
     }
 }
+
+type ResendState = {
+  message: string;
+  success: boolean;
+};
+
+const resendSchema = z.object({
+  phoneNumber: phoneSchema,
+  voucherCode: z.string().min(1, 'Voucher code cannot be empty.'),
+});
+
+export async function resendVoucherAction(
+  input: { phoneNumber: string; voucherCode: string }
+): Promise<ResendState> {
+  const validation = resendSchema.safeParse(input);
+
+  if (!validation.success) {
+    return { message: validation.error.errors[0].message, success: false };
+  }
+  
+  const { phoneNumber, voucherCode } = validation.data;
+
+  try {
+    const result = await sendWhatsappVoucher({ phoneNumber, voucherCode });
+    if (result.success) {
+      return { message: `Voucher resent successfully to ${phoneNumber}.`, success: true };
+    } else {
+      return { message: result.message || 'An unknown error occurred while resending.', success: false };
+    }
+  } catch (error) {
+    console.error("Resend voucher failed:", error);
+    return { message: 'An unexpected server error occurred.', success: false };
+  }
+}
