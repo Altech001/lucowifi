@@ -58,17 +58,6 @@ export function MembersTable({ members }: MembersTableProps) {
       .sort((a, b) => parseISO(b.createdAt).getTime() - parseISO(a.createdAt).getTime());
   }, [members, filter]);
 
-  const onAction = async (action: (id: string) => Promise<{ success: boolean; message: string }>, memberId: string) => {
-    startTransition(async () => {
-        const result = await action(memberId);
-        toast({
-            variant: result.success ? 'default' : 'destructive',
-            title: result.success ? 'Success' : 'Error',
-            description: result.message
-        });
-    });
-  }
-
   const viewDocument = (dataUri: string) => {
     if (!dataUri) return;
     // For images, we can open them directly.
@@ -101,6 +90,19 @@ export function MembersTable({ members }: MembersTableProps) {
         return <Badge>{status}</Badge>;
     }
   };
+  
+  const handleAction = (action: 'approve' | 'reject', memberId: string) => {
+    startTransition(async () => {
+        const serverAction = action === 'approve' ? approveMembershipAction : rejectMembershipAction;
+        const result = await serverAction(memberId);
+        toast({
+            variant: result.success ? 'default' : 'destructive',
+            title: result.success ? 'Success' : 'Error',
+            description: result.message
+        });
+    });
+  }
+
 
   return (
     <div className="space-y-4">
@@ -155,7 +157,7 @@ export function MembersTable({ members }: MembersTableProps) {
                        <AlertDialog>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
                                         <span className="sr-only">Open menu</span>
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
@@ -164,7 +166,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                      <DropdownMenuItem
                                         onClick={() => viewDocument(member.documentDataUri!)}
-                                        disabled={!member.documentDataUri}
+                                        disabled={!member.documentDataUri || isPending}
                                     >
                                         <FileText className="mr-2 h-4 w-4" />
                                         View Document
@@ -172,12 +174,12 @@ export function MembersTable({ members }: MembersTableProps) {
                                     <DropdownMenuSeparator />
                                      {member.status === 'pending' && (
                                         <>
-                                            <DropdownMenuItem onClick={() => onAction(approveMembershipAction, member.id)}>
+                                            <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
                                                 <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                                                 Approve
                                             </DropdownMenuItem>
                                             <AlertDialogTrigger asChild>
-                                                <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()}>
+                                                <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()} disabled={isPending}>
                                                      <XCircle className="mr-2 h-4 w-4" />
                                                      Reject
                                                 </DropdownMenuItem>
@@ -185,14 +187,14 @@ export function MembersTable({ members }: MembersTableProps) {
                                         </>
                                      )}
                                      {member.status === 'rejected' && (
-                                        <DropdownMenuItem onClick={() => onAction(approveMembershipAction, member.id)}>
+                                        <DropdownMenuItem onClick={() => handleAction('approve', member.id)} disabled={isPending}>
                                             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                                             Re-Approve
                                         </DropdownMenuItem>
                                      )}
                                      {member.status === 'approved' && (
                                          <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()}>
+                                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => e.preventDefault()} disabled={isPending}>
                                                 <XCircle className="mr-2 h-4 w-4" />
                                                 Reject
                                             </DropdownMenuItem>
@@ -209,7 +211,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <Button variant="destructive" onClick={() => onAction(rejectMembershipAction, member.id)}>
+                                    <Button variant="destructive" onClick={() => handleAction('reject', member.id)}>
                                         Confirm Rejection
                                     </Button>
                                 </AlertDialogFooter>
