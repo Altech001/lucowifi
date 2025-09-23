@@ -55,6 +55,10 @@ export function NewPackageForm() {
                     <Input id="price" name="price" type="number" placeholder="e.g., 2000" required />
                 </div>
             </div>
+             <div className="space-y-2">
+                <Label htmlFor="durationHours">Duration (in hours)</Label>
+                <Input id="durationHours" name="durationHours" type="number" placeholder="e.g., 72 for 3 days" required />
+            </div>
             <div className="space-y-2">
                 <Label htmlFor="description">Short Description</Label>
                 <Input id="description" name="description" placeholder="e.g., Perfect for a weekend." required />

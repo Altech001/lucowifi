@@ -32,10 +32,10 @@ export async function purchaseVoucherAction(
 
   const validatedPhoneNumber = validation.data;
 
-  // --- Start of new logic: Find an unused voucher ---
   try {
     const vouchersRef = ref(db, `vouchers/${packageSlug}`);
-    const unusedVoucherQuery = query(vouchersRef, orderByChild('used'), equalTo(false), limitToFirst(1));
+    // Find a voucher that does NOT have a `usedAt` field.
+    const unusedVoucherQuery = query(vouchersRef, orderByChild('usedAt'), equalTo(null), limitToFirst(1));
     const snapshot = await get(unusedVoucherQuery);
 
     if (!snapshot.exists()) {
@@ -47,13 +47,11 @@ export async function purchaseVoucherAction(
     const voucher = voucherData[voucherId];
     const voucherCode = voucher.code;
 
-    // Mark the voucher as used and add a timestamp
+    // Mark the voucher as used by adding a timestamp
     const voucherRef = ref(db, `vouchers/${packageSlug}/${voucherId}`);
     await update(voucherRef, {
-      used: true,
       usedAt: new Date().toISOString()
     });
-    // --- End of new logic ---
 
 
     const result = await sendWhatsappVoucher({
@@ -65,8 +63,10 @@ export async function purchaseVoucherAction(
       revalidatePath(`/admin`); // Revalidate to update voucher count
       redirect(`/voucher/${voucherCode}`);
     } else {
-      // If WhatsApp fails, we should ideally roll back the voucher status,
-      // but for now, we'll just show an error.
+      // If WhatsApp fails, roll back the voucher status
+       await update(voucherRef, {
+            usedAt: null
+       });
       return { message: result.message || 'Failed to send voucher via WhatsApp.', success: false };
     }
   } catch (error) {
@@ -245,15 +245,15 @@ export async function uploadVouchersAction(
 
     try {
         const vouchersRef = ref(db, `vouchers/${packageSlug}`);
-        const newVouchers: { [key: string]: { code: string; used: boolean; createdAt: string } } = {};
+        const newVouchers: { [key: string]: { code: string; createdAt: string; usedAt: null } } = {};
         
         voucherCodes.forEach(code => {
             const newVoucherRef = push(vouchersRef); // This just generates a key locally
             if(newVoucherRef.key) {
                 newVouchers[newVoucherRef.key] = {
                     code: code,
-                    used: false,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    usedAt: null // Explicitly set to null
                 };
             }
         });
@@ -293,8 +293,10 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     const price = formData.get('price') as string;
     const description = formData.get('description') as string;
     const details = formData.get('details') as string;
+    const durationHours = formData.get('durationHours') as string;
 
-    if (!name || !price || !description || !details) {
+
+    if (!name || !price || !description || !details || !durationHours) {
         return { message: 'All fields are required.', success: false };
     }
     
@@ -305,6 +307,7 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
         price: parseInt(price, 10),
         description,
         details: details.split('\n').map(d => d.trim()).filter(d => d),
+        durationHours: parseInt(durationHours, 10),
     };
     
     // In a real app, you would probably want to assign a meaningful imageId
@@ -342,8 +345,8 @@ export async function addVoucherAction(prevState: CrudVoucherState, formData: Fo
         const newVoucherRef = push(vouchersRef);
         await set(newVoucherRef, {
             code: voucherCode,
-            used: false,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            usedAt: null
         });
 
         revalidatePath(`/admin/vouchers/${packageSlug}`);
@@ -359,7 +362,7 @@ export async function updateVoucherAction(prevState: CrudVoucherState, formData:
     const packageSlug = formData.get('packageSlug') as string;
     const voucherId = formData.get('voucherId') as string;
     const voucherCode = formData.get('voucherCode') as string;
-    const isUsed = formData.get('used') === 'on';
+    const usedAt = formData.get('usedAt') as string; // Will be a date string or empty
 
      if (!packageSlug || !voucherId || !voucherCode) {
         return { message: 'Missing required fields.', success: false };
@@ -371,21 +374,12 @@ export async function updateVoucherAction(prevState: CrudVoucherState, formData:
         if(!snapshot.exists()) {
             return { message: 'Voucher not found.', success: false };
         }
-        const existingVoucher = snapshot.val();
 
-        const updates: Partial<Voucher> = {
+        const updates: Partial<Pick<Voucher, 'code'>> & { usedAt: string | null } = {
             code: voucherCode,
-            used: isUsed,
+            // If usedAt is an empty string, set it to null to remove from DB.
+            usedAt: usedAt || null, 
         };
-
-        // If the voucher is being marked as used and wasn't before, set usedAt
-        if (isUsed && !existingVoucher.used) {
-            updates.usedAt = new Date().toISOString();
-        } 
-        // If the voucher is being marked as unused, remove usedAt
-        else if (!isUsed) {
-            updates.usedAt = null; // Use null to remove the field in Firebase
-        }
 
         await update(voucherRef, updates);
 

@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { PlusCircle, Ticket, Eye, Trash2, Database } from "lucide-react";
+import { PlusCircle, Ticket, Eye, Trash2, Database, Clock } from "lucide-react";
 import { getPackages } from "@/lib/database-data";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,9 +85,15 @@ export default async function AdminDashboard() {
               <p className="text-xs text-muted-foreground">
                 {pkg.details.join(' • ')}
               </p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground border-t pt-4">
-                  <Database className="h-4 w-4" />
-                  <span>{pkg.voucherCount ?? 0} Vouchers Available</span>
+              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4" />
+                    <span>{pkg.voucherCount ?? 0} Available</span>
+                  </div>
+                   <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>{pkg.durationHours} hours</span>
+                  </div>
               </div>
             </CardContent>
             <CardFooter className="grid grid-cols-2 gap-2">

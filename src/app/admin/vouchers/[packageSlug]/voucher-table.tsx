@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useActionState } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useActionState } from 'react';
 import type { Voucher } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import { addVoucherAction, updateVoucherAction, deleteVoucherAction } from '@/app/actions';
@@ -40,7 +41,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { SubmitButton } from '@/components/submit-button';
 import { Search, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -60,14 +60,18 @@ function FormattedDate({ dateString }: { dateString: string | undefined }) {
 
     useEffect(() => {
         if (dateString) {
-            // Using parseISO to correctly handle the ISO string
-            setFormattedDate(format(parseISO(dateString), "dd MMM yyyy, HH:mm"));
+            try {
+                const date = parseISO(dateString);
+                setFormattedDate(format(date, "dd MMM yyyy, HH:mm"));
+            } catch (error) {
+                setFormattedDate("Invalid Date");
+            }
         } else {
             setFormattedDate(null);
         }
     }, [dateString]);
     
-    if (!dateString) return null;
+    if (!dateString) return <span className="text-muted-foreground/50">N/A</span>;
 
     return <>{formattedDate || '...'}</>;
 }
@@ -91,7 +95,11 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
   const filteredVouchers = useMemo(() => {
     return vouchers.filter((v) =>
       v.code.toLowerCase().includes(filter.toLowerCase())
-    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    ).sort((a, b) => {
+        const dateA = a.createdAt ? parseISO(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? parseISO(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+    });
   }, [vouchers, filter]);
 
   useEffect(() => {
@@ -123,6 +131,16 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
   const openEditDialog = (voucher: Voucher) => {
     setSelectedVoucher(voucher);
     setIsEditDialogOpen(true);
+  }
+  
+  const getStatus = (voucher: Voucher) => {
+    if (voucher.used) {
+        return <Badge variant="destructive">Active</Badge>;
+    }
+    if (voucher.usedAt) {
+        return <Badge variant="secondary">Expired</Badge>;
+    }
+    return <Badge variant="outline">Available</Badge>;
   }
 
   return (
@@ -177,7 +195,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                 <TableHead>Voucher Code</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created At</TableHead>
-                <TableHead>Used At</TableHead>
+                <TableHead>Activated At</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -187,9 +205,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                   <TableRow key={voucher.id}>
                     <TableCell className="font-mono">{voucher.code}</TableCell>
                     <TableCell>
-                      <Badge variant={voucher.used ? 'destructive' : 'secondary'}>
-                        {voucher.used ? 'Used' : 'Unused'}
-                      </Badge>
+                      {getStatus(voucher)}
                     </TableCell>
                     <TableCell>
                         <FormattedDate dateString={voucher.createdAt} />
@@ -247,7 +263,7 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                 <DialogHeader>
                     <DialogTitle>Edit Voucher</DialogTitle>
                     <DialogDescription>
-                        Update the voucher code or its usage status.
+                        Update the voucher code or its activation date.
                     </DialogDescription>
                 </DialogHeader>
                 {selectedVoucher && (
@@ -258,9 +274,10 @@ export function VoucherTable({ vouchers, packageSlug }: VoucherTableProps) {
                             <Label htmlFor="editVoucherCode">Voucher Code</Label>
                             <Input id="editVoucherCode" name="voucherCode" defaultValue={selectedVoucher.code} required />
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <Checkbox id="used" name="used" defaultChecked={selectedVoucher.used} />
-                            <Label htmlFor="used">Mark as used</Label>
+                        <div>
+                            <Label htmlFor="usedAt">Activation Date (leave blank to reset)</Label>
+                            <Input id="usedAt" name="usedAt" defaultValue={selectedVoucher.usedAt || ''} placeholder="YYYY-MM-DDTHH:mm:ss.sssZ" />
+                             <p className="text-sm text-muted-foreground">Editing this will reset the voucher's timer.</p>
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

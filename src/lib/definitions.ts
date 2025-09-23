@@ -7,12 +7,13 @@ export type Package = {
   details: string[];
   imageId: string;
   voucherCount?: number;
+  durationHours: number; // Duration in hours
 };
 
 export type Voucher = {
   id: string;
   code: string;
-  used: boolean;
+  used: boolean; // This will be calculated dynamically
   createdAt: string;
   usedAt?: string;
 };
