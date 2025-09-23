@@ -488,9 +488,52 @@ export async function deletePackageAction(formData: FormData): Promise<void> {
     revalidatePath('/admin');
 }
 
+
+type LoginState = {
+    message: string;
+    success: boolean;
+    credentials?: {
+        username: string;
+        password?: string;
+    }
+};
+
+export async function findMembershipByUsername(prevState: LoginState, formData: FormData): Promise<LoginState> {
+    const username = formData.get('username') as string;
+    
+    if (!username) {
+        return { message: 'Username is required.', success: false };
+    }
+
+    try {
+        const q = query(ref(db, 'memberships'), orderByChild('username'), equalTo(username), limitToFirst(1));
+        const snapshot = await get(q);
+
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const membershipId = Object.keys(data)[0];
+            const membershipData = data[membershipId];
+
+            return {
+                message: 'Membership found.',
+                success: true,
+                credentials: {
+                    username: membershipData.username,
+                    password: membershipData.password,
+                }
+            }
+        } else {
+            return { message: 'No membership found with that username.', success: false };
+        }
+    } catch(e) {
+        console.error("Failed to query membership", e);
+        return { message: 'An error occurred while searching for your membership.', success: false };
+    }
+}
     
     
 
     
 
     
+
