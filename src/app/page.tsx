@@ -1,6 +1,13 @@
-import { PackageCard } from "@/components/package-card";
 import { packages } from "@/lib/data";
-import { Wifi } from "lucide-react";
+import { Wifi, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function Home() {
   return (
@@ -10,21 +17,48 @@ export default function Home() {
           VoucherWave
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Instant connectivity, delivered. Choose a package to get started and receive your voucher via WhatsApp in seconds.
+          Instant connectivity, delivered. Choose a package to get started and
+          receive your voucher via WhatsApp in seconds.
         </p>
       </header>
 
-      <div className="mb-12">
-        <div className="flex items-center justify-center gap-2 text-2xl font-semibold font-headline text-foreground mb-6">
-          <Wifi className="text-primary" />
-          <h2>Available Packages</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {packages.map((pkg) => (
-            <PackageCard key={pkg.slug} pkg={pkg} />
-          ))}
-        </div>
-      </div>
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader>
+          <div className="flex items-center gap-2 text-2xl font-semibold font-headline text-foreground">
+            <Wifi className="text-primary" />
+            <CardTitle>Available Packages</CardTitle>
+          </div>
+          <CardDescription>Select a plan to continue.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {packages.map((pkg) => (
+              <Link
+                key={pkg.slug}
+                href={`/packages/${pkg.slug}`}
+                className="block"
+              >
+                <div className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent hover:text-accent-foreground">
+                  <div>
+                    <h3 className="font-semibold text-lg group-hover:text-primary">
+                      {pkg.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {pkg.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="font-semibold text-primary text-lg whitespace-nowrap">
+                      ${pkg.price}
+                    </span>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
