@@ -1,7 +1,8 @@
 
+
 import { db } from './firebase';
 import { ref, get, child } from 'firebase/database';
-import type { Package, Voucher } from './definitions';
+import type { Package, Voucher, Membership } from './definitions';
 import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-fns';
 
 export async function getPackages(): Promise<Package[]> {
@@ -135,6 +136,25 @@ export async function getAllVouchersWithPackageInfo(): Promise<(Voucher & { pack
 
     } catch (error) {
         console.error("Error fetching all vouchers:", error);
+        return [];
+    }
+}
+
+export async function getMemberships(): Promise<Membership[]> {
+    const dbRef = ref(db, 'memberships');
+    try {
+        const snapshot = await get(dbRef);
+        if (snapshot.exists()) {
+            const membershipsData = snapshot.val();
+            const membershipList: Membership[] = Object.keys(membershipsData).map(key => ({
+                id: key,
+                ...membershipsData[key],
+            }));
+            return membershipList;
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching memberships:", error);
         return [];
     }
 }

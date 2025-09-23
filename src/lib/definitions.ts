@@ -1,4 +1,5 @@
 
+
 export type Package = {
   slug: string;
   name: string;
@@ -18,3 +19,14 @@ export type Voucher = {
   usedAt?: string;
   purchasedBy?: string;
 };
+
+export type Membership = {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  username: string;
+  password?: string; // It's sensitive, might not always be fetched/sent to client
+  documentDataUri?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}

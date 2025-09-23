@@ -536,8 +536,44 @@ export async function findMembershipAction(prevState: LoginState, formData: Form
     }
 }
     
-    
+type MembershipStatusState = {
+  message: string;
+  success: boolean;
+};
 
+export async function approveMembershipAction(
+  membershipId: string
+): Promise<MembershipStatusState> {
+  if (!membershipId) {
+    return { message: "Membership ID is missing.", success: false };
+  }
+  try {
+    const membershipRef = ref(db, `memberships/${membershipId}`);
+    await update(membershipRef, { status: 'approved' });
+    revalidatePath('/admin/members');
+    return { message: "Membership approved.", success: true };
+  } catch (error) {
+    console.error("Failed to approve membership", error);
+    return { message: "Failed to approve membership.", success: false };
+  }
+}
+
+export async function rejectMembershipAction(
+  membershipId: string
+): Promise<MembershipStatusState> {
+  if (!membershipId) {
+    return { message: "Membership ID is missing.", success: false };
+  }
+  try {
+    const membershipRef = ref(db, `memberships/${membershipId}`);
+    await update(membershipRef, { status: 'rejected' });
+    revalidatePath('/admin/members');
+    return { message: "Membership rejected.", success: true };
+  } catch (error) {
+    console.error("Failed to reject membership", error);
+    return { message: "Failed to reject membership.", success: false };
+  }
+}
     
 
     
