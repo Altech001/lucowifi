@@ -232,5 +232,3 @@ export function MembersTable({ members }: MembersTableProps) {
     </div>
   );
 }
-
-    
