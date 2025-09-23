@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { packages } from '@/lib/data';
 import type { Package } from '@/lib/data';
@@ -13,25 +12,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
-import { PurchaseDialog } from '@/components/purchase-dialog';
 
 export default function Home() {
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
-  const [isDialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
 
   const handleCardClick = (pkg: Package) => {
     if (pkg.slug === 'monthly-membership') {
       router.push('/membership');
     } else {
-      setSelectedPackage(pkg);
-      setDialogOpen(true);
+      router.push(`/voucher/purchase?package=${pkg.slug}`);
     }
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedPackage(null);
   };
 
   return (
@@ -76,14 +66,6 @@ export default function Home() {
           </Card>
         ))}
       </div>
-
-      {selectedPackage && (
-        <PurchaseDialog
-          isOpen={isDialogOpen}
-          onClose={handleDialogClose}
-          packageInfo={selectedPackage}
-        />
-      )}
     </div>
   );
 }

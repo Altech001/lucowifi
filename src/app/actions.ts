@@ -15,6 +15,7 @@ export async function purchaseVoucherAction(
   formData: FormData
 ): Promise<{ message: string; success: boolean }> {
   const phoneNumber = formData.get('phoneNumber');
+  const packageSlug = formData.get('packageSlug'); // You might use this later
 
   const validation = phoneSchema.safeParse(phoneNumber);
 
