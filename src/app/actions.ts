@@ -823,6 +823,7 @@ export async function addAnnouncementAction(prevState: AnnouncementActionState, 
         });
         
         revalidatePath('/admin/settings');
+        revalidatePath('/'); // Revalidate home page too
         return { message: 'Announcement added successfully!', success: true };
 
     } catch (e) {
@@ -831,11 +832,12 @@ export async function addAnnouncementAction(prevState: AnnouncementActionState, 
     }
 }
 
-export async function deleteAnnouncementAction(formData: FormData): Promise<AnnouncementActionState> {
+export async function deleteAnnouncementAction(formData: FormData): Promise<void> {
     const announcementId = formData.get('announcementId') as string;
 
     if (!announcementId) {
-        return { message: 'Announcement ID is missing.', success: false };
+        console.error('Announcement ID is missing.');
+        return;
     }
 
     try {
@@ -843,9 +845,8 @@ export async function deleteAnnouncementAction(formData: FormData): Promise<Anno
         await remove(announcementRef);
 
         revalidatePath('/admin/settings');
-        return { message: 'Announcement deleted successfully.', success: true };
+        revalidatePath('/'); // Revalidate home page too
     } catch(e) {
         console.error("Failed to delete announcement", e);
-        return { message: 'Failed to delete announcement.', success: false };
     }
 }

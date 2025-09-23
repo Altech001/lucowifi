@@ -64,7 +64,7 @@ export function AnnouncementsForm({ announcements }: AnnouncementsFormProps) {
                         </div>
                         <div className="flex items-center space-x-2">
                             <Checkbox id="showImage" name="showImage" />
-                            <Label htmlFor="showImage">Show image in announcement</Label>
+                            <Label htmlFor="showImage" className="font-normal">Show image in announcement</Label>
                         </div>
                         <SubmitButton>Add Announcement</SubmitButton>
                 </form>
