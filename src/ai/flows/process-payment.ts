@@ -50,11 +50,11 @@ const processPaymentTool = ai.defineTool(
         const body = {
             amount: formattedAmount,
             number: payload.number,
-            ref: payload.ref,
+            refer: payload.ref, // Corrected from 'ref' to 'refer'
             username: payload.username,
             password: payload.password,
-            success: successUrl,
-            failed: failedUrl,
+            success: successUrl, // Corrected from 'success-re-url'
+            failed: failedUrl, // Corrected from 'failed-re-url'
         };
 
         try {
