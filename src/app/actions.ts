@@ -268,10 +268,11 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
 
     try {
         await addDoc(collection(db, 'packages'), newPackageWithImage);
-        revalidatePath('/admin');
+        // revalidatePath('/admin'); // This can cause issues with useActionState
         return { message: 'Package created successfully!', success: true };
     } catch (error) {
         console.error("Failed to write to firestore", error);
         return { message: 'Failed to save the new package.', success: false };
     }
 }
+
