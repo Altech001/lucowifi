@@ -33,7 +33,7 @@ export default function PurchasePage() {
     
     return (
         <div className="container mx-auto px-4 py-8 sm:py-12 flex items-center justify-center">
-            <Card className="w-full max-w-lg">
+            <Card className="w-full max-w-lg border-0">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">
                         Purchase: <span className="text-primary">{selectedPackage.name}</span>
