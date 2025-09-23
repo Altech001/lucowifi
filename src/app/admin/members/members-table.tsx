@@ -35,7 +35,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, MoreHorizontal, FileText, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Search, MoreHorizontal, Download, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 type MembersTableProps = {
@@ -58,20 +58,40 @@ export function MembersTable({ members }: MembersTableProps) {
       .sort((a, b) => parseISO(b.createdAt).getTime() - parseISO(a.createdAt).getTime());
   }, [members, filter]);
 
-  const viewDocument = (dataUri: string) => {
+  const downloadDocument = (dataUri: string, fileName: string) => {
     if (!dataUri) return;
-    if (dataUri.startsWith('data:image/')) {
-        const newWindow = window.open();
-        newWindow?.document.write(`<img src="${dataUri}" style="max-width: 100%; height: auto;" />`);
-        newWindow?.document.title = "Document Preview";
-    } 
-    else if (dataUri.startsWith('data:application/pdf')) {
-         const newWindow = window.open();
-         newWindow?.document.write(`<iframe src="${dataUri}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-         newWindow?.document.title = "Document Preview";
-    }
-    else {
-        window.open(dataUri, '_blank');
+    
+    try {
+        const byteString = atob(dataUri.split(',')[1]);
+        const mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0];
+        
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+
+        const blob = new Blob([ab], { type: mimeString });
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const fileExtension = mimeString.split('/')[1] || 'bin';
+        link.download = `${fileName}-document.${fileExtension}`;
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch(e) {
+        console.error("Failed to download document", e);
+        toast({
+            variant: 'destructive',
+            title: 'Download Failed',
+            description: 'Could not process the document for download.'
+        });
     }
   }
 
@@ -174,11 +194,11 @@ export function MembersTable({ members }: MembersTableProps) {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                  <DropdownMenuItem
-                                    onClick={() => viewDocument(member.documentDataUri!)}
+                                    onClick={() => downloadDocument(member.documentDataUri!, member.username)}
                                     disabled={!member.documentDataUri || isPending}
                                 >
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    View Document
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download Document
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                  {member.status === 'pending' && (
@@ -199,6 +219,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                         Re-Approve
                                     </DropdownMenuItem>
                                  )}
+
                                  {member.status === 'approved' && (
                                      <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => setMemberToReject(member)} disabled={isPending}>
                                         <XCircle className="mr-2 h-4 w-4" />
