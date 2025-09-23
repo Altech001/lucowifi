@@ -2,7 +2,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { packages } from '@/lib/data';
+import { getPackages } from '@/lib/firestore-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PurchaseForm } from './purchase-form';
 import Link from 'next/link';
@@ -15,13 +15,36 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { useEffect, useState } from 'react';
+import type { Package } from '@/lib/definitions';
 
 
 export default function PurchasePage() {
     const searchParams = useSearchParams();
     const packageSlug = searchParams.get('package');
+    const [selectedPackage, setSelectedPackage] = useState<Package | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
 
-    const selectedPackage = packages.find(p => p.slug === packageSlug);
+
+    useEffect(() => {
+        async function fetchPackage() {
+            if (packageSlug) {
+                const pkgs = await getPackages();
+                const foundPackage = pkgs.find(p => p.slug === packageSlug);
+                setSelectedPackage(foundPackage);
+            }
+            setLoading(false);
+        }
+        fetchPackage();
+    }, [packageSlug]);
+
+    if (loading) {
+        return (
+             <div className="container mx-auto px-4 py-8 text-center">
+                <p>Loading...</p>
+            </div>
+        )
+    }
 
     if (!selectedPackage) {
         return (

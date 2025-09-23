@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { PlusCircle, Ticket } from "lucide-react";
-import { packages } from "@/lib/data";
+import { getPackages } from "@/lib/firestore-data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,8 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function AdminDashboard() {
-  const voucherPackages = packages.filter(p => p.slug !== 'monthly-membership');
+export default async function AdminDashboard() {
+  const voucherPackages = await getPackages();
 
   return (
     <div>

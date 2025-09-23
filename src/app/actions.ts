@@ -9,6 +9,9 @@ import { membershipSignup } from '@/ai/flows/membership-signup';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Package } from '@/lib/definitions';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, writeBatch, doc } from 'firebase/firestore';
+import { revalidatePath } from 'next/cache';
 
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
@@ -193,20 +196,36 @@ export async function uploadVouchersAction(
 
     const csvData = await file.text();
     const rows = csvData.split(/\r\n|\n/).filter(row => row.trim() !== '');
-    const voucherCount = rows.length > 1 ? rows.length -1 : rows.length; // Assume header row
+    const header = rows.shift()?.split(',') || [];
+    const voucherCodeIndex = header.indexOf('voucherCode');
 
-    // In a real application, you would parse the CSV and store the vouchers in a database,
-    // associating them with the `packageSlug`.
-    console.log(`Uploading ${voucherCount} vouchers for package: ${packageSlug}`);
-    console.log(csvData);
-
-    // Simulate a successful upload
-    return {
-        message: `${voucherCount} vouchers have been successfully uploaded and linked to the "${packageSlug}" package.`,
-        success: true,
-        count: voucherCount,
+    if (voucherCodeIndex === -1) {
+        return { message: 'CSV must have a "voucherCode" column.', success: false };
     }
+    
+    const voucherCodes = rows.map(row => row.split(',')[voucherCodeIndex]).filter(Boolean);
+    const voucherCount = voucherCodes.length;
 
+    try {
+        const batch = writeBatch(db);
+        const vouchersCollection = collection(db, 'packages', packageSlug, 'vouchers');
+
+        voucherCodes.forEach(code => {
+            const voucherRef = doc(vouchersCollection);
+            batch.set(voucherRef, { code: code, used: false, createdAt: new Date() });
+        });
+
+        await batch.commit();
+
+        return {
+            message: `${voucherCount} vouchers have been successfully uploaded and linked to the "${packageSlug}" package.`,
+            success: true,
+            count: voucherCount,
+        }
+    } catch (error) {
+        console.error("Failed to upload vouchers to Firestore", error);
+        return { message: 'Failed to save vouchers to the database.', success: false };
+    }
 }
 
 type CreatePackageState = {
@@ -244,37 +263,16 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     // In a real app, you would probably want to assign a meaningful imageId
     const newPackageWithImage: Package = {
         ...newPackage,
-        imageId: 'gold-package'
+        imageId: 'gold-package' // Default image for new packages
     };
 
     try {
-        const filePath = path.join(process.cwd(), 'src', 'lib', 'data.ts');
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-
-        // This is a simplified way to append to the array.
-        // It assumes a specific format and could be brittle.
-        const newPackageString = `,\n  {\n    slug: "${newPackageWithImage.slug}",\n    name: "${newPackageWithImage.name}",\n    price: ${newPackageWithImage.price},\n    description: "${newPackageWithImage.description}",\n    details: [${newPackageWithImage.details.map(d => `"${d}"`).join(', ')}],\n    imageId: "${newPackageWithImage.imageId}",\n  }`;
-
-        const closingBracketIndex = fileContent.lastIndexOf('];');
-
-        if (closingBracketIndex === -1) {
-            throw new Error("Could not find the closing bracket of the packages array.");
-        }
-
-        const updatedFileContent = 
-            fileContent.substring(0, closingBracketIndex) + 
-            newPackageString + 
-            fileContent.substring(closingBracketIndex);
-
-        await fs.writeFile(filePath, updatedFileContent, 'utf-8');
-        
+        await addDoc(collection(db, 'packages'), newPackageWithImage);
     } catch (error) {
-        console.error("Failed to write to data.ts", error);
+        console.error("Failed to write to firestore", error);
         return { message: 'Failed to save the new package.', success: false };
     }
     
-    // Invalidate the cache for the admin page to show the new package
-    // For this to work well, you might need to use revalidatePath from 'next/cache'
-    // but for now, a redirect will force a fresh load.
+    revalidatePath('/admin');
     redirect('/admin');
 }

@@ -2,7 +2,7 @@
 'use client';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { packages } from "@/lib/data";
+import { getPackages } from "@/lib/firestore-data";
 import { UploadForm } from "./upload-form";
 import {
   Breadcrumb,
@@ -13,12 +13,35 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import type { Package } from "@/lib/definitions";
 
 
-export default function UploadPage({ params }: { params: { packageSlug: string } }) {
+export default function UploadPage() {
     const pathname = usePathname();
-    const packageSlug = pathname.split('/').pop();
-    const selectedPackage = packages.find(p => p.slug === packageSlug);
+    const packageSlug = pathname.split('/').pop() || '';
+    const [selectedPackage, setSelectedPackage] = useState<Package | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchPackage() {
+            if (packageSlug) {
+                const pkgs = await getPackages();
+                const foundPackage = pkgs.find(p => p.slug === packageSlug);
+                setSelectedPackage(foundPackage);
+            }
+            setLoading(false);
+        }
+        fetchPackage();
+    }, [packageSlug]);
+
+    if (loading) {
+         return (
+            <div className="text-center">
+                <p>Loading package details...</p>
+            </div>
+        )
+    }
 
     if (!selectedPackage) {
         return (
@@ -61,7 +84,7 @@ export default function UploadPage({ params }: { params: { packageSlug: string }
                     Upload Vouchers for <span className="text-primary">{selectedPackage.name}</span>
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Upload a CSV file containing the voucher codes for this package.
+                    Upload a CSV file containing the voucher codes for this package. The file must contain a 'voucherCode' column.
                 </p>
             </div>
             
