@@ -69,6 +69,26 @@ export function MembersTable({ members }: MembersTableProps) {
     });
   }
 
+  const viewDocument = (dataUri: string) => {
+    if (!dataUri) return;
+    // For images, we can open them directly.
+    if (dataUri.startsWith('data:image/')) {
+        const newWindow = window.open();
+        newWindow?.document.write(`<img src="${dataUri}" style="max-width: 100%; height: auto;" />`);
+        newWindow?.document.title = "Document Preview";
+    } 
+    // For PDFs, embed them.
+    else if (dataUri.startsWith('data:application/pdf')) {
+         const newWindow = window.open();
+         newWindow?.document.write(`<iframe src="${dataUri}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+         newWindow?.document.title = "Document Preview";
+    }
+    // Fallback for other types
+    else {
+        window.open(dataUri, '_blank');
+    }
+  }
+
   const getStatusBadge = (status: Membership['status']) => {
     switch (status) {
       case 'approved':
@@ -97,7 +117,8 @@ export function MembersTable({ members }: MembersTableProps) {
         </div>
       </div>
 
-      <div className="border rounded-lg w-full max-h-[70vh] overflow-y-auto">
+      <div className="border rounded-lg w-full">
+        <div className="relative w-full overflow-auto max-h-[70vh]">
           <Table>
             <TableHeader className="sticky top-0 bg-muted">
               <TableRow>
@@ -142,7 +163,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                      <DropdownMenuItem
-                                        onClick={() => window.open(member.documentDataUri, '_blank')}
+                                        onClick={() => viewDocument(member.documentDataUri!)}
                                         disabled={!member.documentDataUri}
                                     >
                                         <FileText className="mr-2 h-4 w-4" />
@@ -206,7 +227,10 @@ export function MembersTable({ members }: MembersTableProps) {
               )}
             </TableBody>
           </Table>
+        </div>
       </div>
     </div>
   );
 }
+
+    
