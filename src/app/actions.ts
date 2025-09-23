@@ -10,7 +10,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Package } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
-import { ref, set, push } from 'firebase/database';
+import { ref, set, push, update } from 'firebase/database';
 
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
@@ -189,28 +189,37 @@ export async function uploadVouchersAction(
         return { message: 'Package not specified.', success: false };
     }
 
-    if (file.type !== 'text/csv') {
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
         return { message: 'Invalid file type. Please upload a CSV file.', success: false };
     }
 
     const csvData = await file.text();
     const rows = csvData.split(/\r\n|\n/).filter(row => row.trim() !== '');
-    const header = rows.shift()?.split(',') || [];
-    const voucherCodeIndex = header.indexOf('voucherCode');
+    
+    if (rows.length === 0) {
+        return { message: 'CSV file is empty.', success: false };
+    }
+
+    const header = rows.shift()!.split(',').map(h => h.trim().toLowerCase());
+    const voucherCodeIndex = header.indexOf('vouchercode');
 
     if (voucherCodeIndex === -1) {
         return { message: 'CSV must have a "voucherCode" column.', success: false };
     }
     
-    const voucherCodes = rows.map(row => row.split(',')[voucherCodeIndex]).filter(Boolean);
+    const voucherCodes = rows.map(row => row.split(',')[voucherCodeIndex]?.trim()).filter(Boolean);
     const voucherCount = voucherCodes.length;
+    
+    if (voucherCount === 0) {
+        return { message: 'No voucher codes found in the file.', success: false };
+    }
 
     try {
         const vouchersRef = ref(db, `vouchers/${packageSlug}`);
         const newVouchers: { [key: string]: { code: string; used: boolean; createdAt: string } } = {};
         
         voucherCodes.forEach(code => {
-            const newVoucherRef = push(vouchersRef); // Get a new unique key
+            const newVoucherRef = push(vouchersRef); // This just generates a key locally
             if(newVoucherRef.key) {
                 newVouchers[newVoucherRef.key] = {
                     code: code,
@@ -220,7 +229,7 @@ export async function uploadVouchersAction(
             }
         });
         
-        await set(vouchersRef, newVouchers);
+        await update(vouchersRef, newVouchers);
 
         return {
             message: `${voucherCount} vouchers have been successfully uploaded and linked to the "${packageSlug}" package.`,
@@ -281,3 +290,5 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
         return { message: 'Failed to save the new package.', success: false };
     }
 }
+
+    
