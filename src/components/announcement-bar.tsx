@@ -4,20 +4,21 @@ import { useState } from 'react';
 import { Megaphone, Pause, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import type { Announcement } from '@/lib/definitions';
 
-const announcements = [
-  'Get 20% off on all monthly plans this week!',
-  'New high-speed hotspot now live at Acacia Mall!',
-  'Refer a friend and get 5GB of data for free!',
-];
+type AnnouncementBarProps = {
+  announcements: Announcement[];
+};
 
-export function AnnouncementBar() {
+export function AnnouncementBar({ announcements }: AnnouncementBarProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
-  if (!isVisible) {
+  if (!isVisible || announcements.length === 0) {
     return null;
   }
+
+  const announcementTexts = announcements.map(a => a.text);
 
   return (
     <div className="bg-background dark:bg-zinc-900 border-b text-foreground text-xs sm:text-sm">
@@ -33,7 +34,7 @@ export function AnnouncementBar() {
               style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
             >
               {/* Render items twice for seamless loop */}
-              {[...announcements, ...announcements].map((text, index) => (
+              {[...announcementTexts, ...announcementTexts].map((text, index) => (
                 <a
                   key={index}
                   href="#"

@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AnnouncementBar } from '@/components/announcement-bar';
 import { AnnouncementDialog } from '@/components/announcement-dialog';
 import { PromotionsDialog } from '@/components/promotions-dialog';
-import { getPromotions } from '@/lib/database-data';
+import { getPromotions, getAnnouncements } from '@/lib/database-data';
 
 export const metadata: Metadata = {
   title: 'Luco WIFI',
@@ -19,6 +19,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const promotions = await getPromotions();
+  const announcements = await getAnnouncements();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -35,7 +36,7 @@ export default async function RootLayout({
         >
           <div className="min-h-screen flex flex-col">
             <Header />
-            <AnnouncementBar />
+            <AnnouncementBar announcements={announcements} />
             <main className="flex-1">{children}</main>
           </div>
           <Toaster />
