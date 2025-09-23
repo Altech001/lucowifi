@@ -96,7 +96,7 @@ export function AnalysisForm() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="relative max-h-96 overflow-auto border rounded-lg">
+                        <div className="relative max-h-[60vh] overflow-auto border rounded-lg">
                              <Table>
                                 <TableHeader className="sticky top-0 bg-muted">
                                     <TableRow>
