@@ -118,7 +118,8 @@ export function MembershipForm() {
             // Cannot set File object as hidden input value directly, handled by main file input
             return null;
           }
-          if (key !== 'password' && key !== 'confirmPassword') {
+          // Also carry over the password from step 2
+          if (key !== 'confirmPassword') {
               return <input type="hidden" name={key} key={key} value={value as string} />;
           }
           return null;
@@ -171,7 +172,7 @@ export function MembershipForm() {
           </div>
           <div className="space-y-2 relative">
             <Label htmlFor="password" className="flex items-center gap-2 text-base"><Lock className="h-4 w-4" />Create a Password</Label>
-            <Input id="password" name="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" required className="text-lg pr-10" onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" name="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" required className="text-lg pr-10" onChange={(e) => setPassword(e.target.value)} defaultValue={formData.get('password')?.toString()} />
              <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </Button>
@@ -202,6 +203,10 @@ export function MembershipForm() {
                      <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">Username:</span>
                         <span className="font-semibold">{formData.get('username')}</span>
+                    </div>
+                     <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Password:</span>
+                        <span className="font-semibold font-mono">{'*'.repeat(formData.get('password')?.toString().length ?? 0)}</span>
                     </div>
                 </CardContent>
             </Card>
