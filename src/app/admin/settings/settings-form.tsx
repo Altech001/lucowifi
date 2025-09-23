@@ -1,0 +1,161 @@
+
+'use client';
+import { useActionState, useEffect, useRef } from 'react';
+import { addPromotionAction, deletePromotionAction, exportUserPhonesAction } from '@/app/actions';
+import type { Package, Promotion } from '@/lib/definitions';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/submit-button';
+import { Gift, Trash2, Download, FileDown, Phone } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format, parseISO } from 'date-fns';
+
+const initialState = {
+    message: '',
+    success: false
+};
+
+type SettingsFormProps = {
+    packages: Package[];
+    promotions: Promotion[];
+}
+
+export function SettingsForm({ packages, promotions }: SettingsFormProps) {
+    const { toast } = useToast();
+    const [addState, addFormAction] = useActionState(addPromotionAction, initialState);
+    const addFormRef = useRef<HTMLFormElement>(null);
+
+    useEffect(() => {
+        if(addState.message) {
+            toast({
+                variant: addState.success ? 'default' : 'destructive',
+                title: addState.success ? 'Success' : 'Error',
+                description: addState.message
+            });
+            if (addState.success) {
+                addFormRef.current?.reset();
+            }
+        }
+    }, [addState, toast]);
+
+    const handleExport = async () => {
+        const result = await exportUserPhonesAction();
+        if (result.success) {
+             const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' });
+             const url = URL.createObjectURL(blob);
+             const link = document.createElement('a');
+             link.setAttribute('href', url);
+             link.setAttribute('download', 'luco_wifi_users.csv');
+             document.body.appendChild(link);
+             link.click();
+             document.body.removeChild(link);
+             toast({ title: 'Export Started', description: 'Your file will be downloaded shortly.'});
+        } else {
+            toast({ variant: 'destructive', title: 'Export Failed', description: result.message });
+        }
+    };
+
+
+    return (
+        <div className="grid gap-8 md:grid-cols-2">
+            <div className="space-y-8">
+                {/* Promotions Card */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <Gift className="h-6 w-6" />
+                            <CardTitle>Manage Promotions</CardTitle>
+                        </div>
+                        <CardDescription>Add or remove promotional voucher codes that will be displayed on the home page.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <form ref={addFormRef} action={addFormAction} className="p-4 border rounded-lg space-y-4">
+                             <h3 className="font-semibold">Add New Promotion</h3>
+                             <div className="space-y-2">
+                                <Label htmlFor="code">Promo Code</Label>
+                                <Input id="code" name="code" placeholder="e.g., FREEWIFI" required />
+                             </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="packageSlug">For Package</Label>
+                                <Select name="packageSlug" required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a package..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {packages.filter(p => p.slug !== 'monthly-membership').map(p => (
+                                            <SelectItem key={p.slug} value={p.slug}>{p.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                             </div>
+                             <SubmitButton>Add Promotion</SubmitButton>
+                        </form>
+
+                        <div>
+                            <h3 className="font-semibold mb-2">Current Promotions</h3>
+                            <div className="border rounded-lg max-h-60 overflow-y-auto">
+                                <Table>
+                                    <TableHeader className="sticky top-0 bg-muted">
+                                        <TableRow>
+                                            <TableHead>Code</TableHead>
+                                            <TableHead>Package</TableHead>
+                                            <TableHead className="text-right">Action</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {promotions.length > 0 ? promotions.map(promo => (
+                                            <TableRow key={promo.id}>
+                                                <TableCell className="font-mono">{promo.code}</TableCell>
+                                                <TableCell>{promo.packageName}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <form action={deletePromotionAction}>
+                                                        <input type="hidden" name="promotionId" value={promo.id} />
+                                                        <SubmitButton variant="ghost" size="icon" className="text-destructive h-8 w-8">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </SubmitButton>
+                                                    </form>
+                                                </TableCell>
+                                            </TableRow>
+                                        )) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="text-center h-24">No promotions yet.</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="space-y-8">
+                 {/* Data Export Card */}
+                <Card>
+                    <CardHeader>
+                         <div className="flex items-center gap-3">
+                            <FileDown className="h-6 w-6" />
+                            <CardTitle>Data Export</CardTitle>
+                        </div>
+                        <CardDescription>Download user data from the system.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                           <div className="flex items-center gap-3">
+                                <Phone className="h-5 w-5" />
+                                <p className="font-medium">User Phone Numbers</p>
+                           </div>
+                           <Button onClick={handleExport}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Export CSV
+                           </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
+}

@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { BarChart, Home, Ticket, Users, UserCog, LogOut } from "lucide-react";
+import { BarChart, Home, Ticket, Users, UserCog, LogOut, Settings } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -57,6 +57,13 @@ export default function AdminLayout({
             <BarChart className="h-5 w-5" />
             <span className="sr-only">Analyze Profiles</span>
           </Link>
+          <Link
+            href="/admin/settings"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <Settings className="h-5 w-5" />
+            <span className="sr-only">Settings</span>
+          </Link>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
             <form action={logout}>
@@ -75,7 +82,7 @@ export default function AdminLayout({
       </div>
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 sm:hidden">
-            <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
+            <div className="grid h-full max-w-lg grid-cols-6 mx-auto">
                 <Link href="/" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Home className="w-5 h-5 mb-1 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Home</span>
@@ -95,6 +102,10 @@ export default function AdminLayout({
                 <Link href="/admin/analyze" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <BarChart className="w-5 h-5 mb-1 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Analyze</span>
+                </Link>
+                 <Link href="/admin/settings" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                    <Settings className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Settings</span>
                 </Link>
             </div>
       </nav>

@@ -30,3 +30,13 @@ export type Membership = {
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
 }
+
+export type Promotion = {
+  id: string;
+  code: string;
+  packageSlug: string;
+  createdAt: string;
+  // Included for display on the home page
+  packageName?: string;
+  packageDescription?: string;
+};

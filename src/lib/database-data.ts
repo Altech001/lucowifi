@@ -2,7 +2,7 @@
 
 import { db } from './firebase';
 import { ref, get, child } from 'firebase/database';
-import type { Package, Voucher, Membership } from './definitions';
+import type { Package, Voucher, Membership, Promotion } from './definitions';
 import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-fns';
 
 export async function getPackages(): Promise<Package[]> {
@@ -78,7 +78,7 @@ export async function getVouchersForPackage(packageSlug: string): Promise<Vouche
     try {
         const packageSnapshot = await get(packageRef);
         if (!packageSnapshot.exists()) {
-            throw new Error(`Package with slug ${packageSlug} not found.`);
+            return []; // Return empty instead of throwing error
         }
         const packageData = packageSnapshot.val() as Omit<Package, 'slug'>;
         
@@ -159,6 +159,37 @@ export async function getMemberships(): Promise<Membership[]> {
         return [];
     } catch (error) {
         console.error("Error fetching memberships:", error);
+        return [];
+    }
+}
+
+
+export async function getPromotions(): Promise<Promotion[]> {
+    const dbRef = ref(db);
+    try {
+        const promotionsSnapshot = await get(child(dbRef, 'promotions'));
+        if (!promotionsSnapshot.exists()) {
+            return [];
+        }
+        
+        const packagesSnapshot = await get(child(dbRef, 'packages'));
+        const packages = packagesSnapshot.exists() ? packagesSnapshot.val() : {};
+
+        const promotionsData = promotionsSnapshot.val();
+        const promotionList: Promotion[] = Object.keys(promotionsData).map(key => {
+            const promo = promotionsData[key];
+            const packageInfo = packages[promo.packageSlug];
+            
+            return {
+                id: key,
+                ...promo,
+                packageName: packageInfo?.name || 'Unknown Package',
+                packageDescription: packageInfo?.description || 'No description available.',
+            };
+        });
+        return promotionList;
+    } catch (error) {
+        console.error("Error fetching promotions:", error);
         return [];
     }
 }

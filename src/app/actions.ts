@@ -12,7 +12,7 @@ import { Package, Voucher } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
 import { ref, set, push, update, remove, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
-import { getVoucherStatus, getAllVouchersWithPackageInfo } from '@/lib/database-data';
+import { getVoucherStatus, getAllVouchersWithPackageInfo, getMemberships } from '@/lib/database-data';
 import { cookies } from 'next/headers';
 
 
@@ -612,4 +612,89 @@ export async function logout() {
   const cookieStore = cookies();
   cookieStore.delete('luco-admin-auth');
   redirect('/admin/login');
+}
+
+
+type PromotionActionState = {
+  message: string;
+  success: boolean;
+}
+
+export async function addPromotionAction(prevState: PromotionActionState, formData: FormData): Promise<PromotionActionState> {
+    const code = formData.get('code') as string;
+    const packageSlug = formData.get('packageSlug') as string;
+
+    if (!code || !packageSlug) {
+        return { message: 'Voucher code and package are required.', success: false };
+    }
+     if (packageSlug === 'monthly-membership') {
+        return { message: 'Cannot create promotions for monthly memberships.', success: false };
+    }
+
+    try {
+        const promotionsRef = ref(db, 'promotions');
+        const newPromotionRef = push(promotionsRef);
+        await set(newPromotionRef, {
+            code,
+            packageSlug,
+            createdAt: new Date().toISOString(),
+        });
+        
+        revalidatePath('/');
+        revalidatePath('/admin/settings');
+        return { message: 'Promotion added successfully!', success: true };
+
+    } catch (e) {
+        console.error("Failed to add promotion", e);
+        return { message: 'Failed to add promotion.', success: false };
+    }
+}
+
+export async function deletePromotionAction(formData: FormData): Promise<PromotionActionState> {
+    const promotionId = formData.get('promotionId') as string;
+
+    if (!promotionId) {
+        return { message: 'Promotion ID is missing.', success: false };
+    }
+
+    try {
+        const promotionRef = ref(db, `promotions/${promotionId}`);
+        await remove(promotionRef);
+
+        revalidatePath('/');
+        revalidatePath('/admin/settings');
+        return { message: 'Promotion deleted successfully.', success: true };
+    } catch(e) {
+        console.error("Failed to delete promotion", e);
+        return { message: 'Failed to delete promotion.', success: false };
+    }
+}
+
+export async function exportUserPhonesAction(): Promise<{ data: string, success: boolean, message: string }> {
+    try {
+        const allVouchers = await getAllVouchersWithPackageInfo();
+        const memberships = await getMemberships();
+        
+        const voucherPhones = allVouchers
+            .map(v => v.purchasedBy)
+            .filter((p): p is string => !!p);
+        
+        const memberPhones = memberships.map(m => m.phoneNumber);
+
+        const allPhones = [...new Set([...voucherPhones, ...memberPhones])];
+        
+        if (allPhones.length === 0) {
+            return { data: '', success: false, message: 'No phone numbers found to export.' };
+        }
+
+        const csvHeader = 'phoneNumber\n';
+        const csvRows = allPhones.join('\n');
+        const csvContent = csvHeader + csvRows;
+
+        return { data: csvContent, success: true, message: `${allPhones.length} phone numbers prepared for download.` };
+
+    } catch(e) {
+        console.error("Failed to export phone numbers", e);
+        return { data: '', success: false, message: 'An unexpected error occurred during export.' };
+    }
 }
