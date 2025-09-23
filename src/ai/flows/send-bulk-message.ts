@@ -42,6 +42,20 @@ export async function generateMessage(input: {messageType: string}): Promise<str
     return output?.text ?? '';
 }
 
+function formatPhoneNumberForApi(phoneNumber: string): string {
+    let cleaned = phoneNumber.replace(/[^\d+]/g, '');
+    if (cleaned.startsWith('0')) {
+        return '+256' + cleaned.substring(1);
+    }
+    if (cleaned.startsWith('256')) {
+        return '+' + cleaned;
+    }
+    if (!cleaned.startsWith('+256')) {
+        return '+256' + cleaned;
+    }
+    return cleaned;
+}
+
 // The main flow for sending the bulk message
 const sendBulkMessageFlow = ai.defineFlow(
   {
@@ -76,18 +90,13 @@ const sendBulkMessageFlow = ai.defineFlow(
         const url = 'https://lucosms-api.onrender.com/api/v1/client/send-sms';
         const apiKey = 'Luco_0gStE1K11IqewVsR9brZY76GfIK2rzve';
 
-        let cleaned = phoneNumber.replace(/\D/g, '');
-        if (cleaned.startsWith('0')) {
-            cleaned = '256' + cleaned.substring(1);
-        } else if (cleaned.length > 0 && !cleaned.startsWith('256')) {
-            cleaned = '256' + cleaned;
-        }
+        const formattedNumber = formatPhoneNumberForApi(phoneNumber);
 
         try {
             await fetch(url, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'accept': 'application/json', 'X-API-Key': apiKey},
-                body: JSON.stringify({ message: text, recipients: [cleaned] })
+                body: JSON.stringify({ message: text, recipients: [formattedNumber] })
             });
             return true;
         } catch (error) {
