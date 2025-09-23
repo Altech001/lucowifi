@@ -1,5 +1,6 @@
 
 
+
 'use server';
 
 import { z } from 'zod';
@@ -10,11 +11,11 @@ import { membershipSignup } from '@/ai/flows/membership-signup';
 import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Package, Voucher } from '@/lib/definitions';
+import { Package, Voucher, PopupSettings } from '@/lib/definitions';
 import { db } from '@/lib/firebase';
 import { ref, set, push, update, remove, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { revalidatePath } from 'next/cache';
-import { getVoucherStatus, getAllVouchersWithPackageInfo, getMemberships } from '@/lib/database-data';
+import { getVoucherStatus, getAllVouchersWithPackageInfo, getMemberships, updatePopupSettings } from '@/lib/database-data';
 import { cookies } from 'next/headers';
 
 
@@ -848,5 +849,33 @@ export async function deleteAnnouncementAction(formData: FormData): Promise<void
         revalidatePath('/'); // Revalidate home page too
     } catch(e) {
         console.error("Failed to delete announcement", e);
+    }
+}
+
+// Popup Settings Actions
+type PopupSettingsState = {
+  message: string;
+  success: boolean;
+};
+
+export async function updatePopupSettingsAction(prevState: PopupSettingsState, formData: FormData): Promise<PopupSettingsState> {
+    const settings: PopupSettings = {
+        isEnabled: formData.get('isEnabled') === 'on',
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+    };
+
+    if (!settings.title || !settings.description) {
+        return { message: 'Title and description are required.', success: false };
+    }
+
+    try {
+        await updatePopupSettings(settings);
+        revalidatePath('/'); // Revalidate home to reflect changes
+        revalidatePath('/admin/settings');
+        return { message: 'Popup settings updated successfully!', success: true };
+    } catch (e) {
+        console.error("Failed to update popup settings", e);
+        return { message: 'Failed to update settings.', success: false };
     }
 }

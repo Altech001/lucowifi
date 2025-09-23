@@ -1,9 +1,10 @@
 
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { addPromotionAction, deletePromotionAction, exportUserPhonesAction, sendBulkMessageAction, generateAIMessageAction } from '@/app/actions';
-import type { Package, Promotion, Announcement } from '@/lib/definitions';
+import type { Package, Promotion, Announcement, PopupSettings } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles, Loader2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AnnouncementsForm } from './announcements-form';
+import { PopupForm } from './popup-form';
 
 const initialPromoState = {
     message: '',
@@ -31,9 +33,10 @@ type SettingsFormProps = {
     packages: Package[];
     promotions: Promotion[];
     announcements: Announcement[];
+    popupSettings: PopupSettings;
 }
 
-export function SettingsForm({ packages, promotions, announcements }: SettingsFormProps) {
+export function SettingsForm({ packages, promotions, announcements, popupSettings }: SettingsFormProps) {
     const { toast } = useToast();
     const [addState, addFormAction] = useActionState(addPromotionAction, initialPromoState);
     const [bulkState, bulkFormAction] = useActionState(sendBulkMessageAction, initialBulkState);
@@ -111,7 +114,7 @@ export function SettingsForm({ packages, promotions, announcements }: SettingsFo
             <div className="space-y-8">
                  {/* Announcements Card */}
                 <AnnouncementsForm announcements={announcements} />
-
+                
                 {/* Promotions Card */}
                 <Card>
                     <CardHeader>
@@ -182,6 +185,9 @@ export function SettingsForm({ packages, promotions, announcements }: SettingsFo
                 </Card>
             </div>
             <div className="space-y-8">
+                 {/* Popup Form Card */}
+                 <PopupForm settings={popupSettings} />
+
                  <Card>
                     <CardHeader>
                         <div className="flex items-center gap-3">

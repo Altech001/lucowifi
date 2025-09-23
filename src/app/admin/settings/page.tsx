@@ -1,6 +1,7 @@
 
 
-import { getPackages, getPromotions, getAnnouncements } from "@/lib/database-data";
+
+import { getPackages, getPromotions, getAnnouncements, getPopupSettings } from "@/lib/database-data";
 import { SettingsForm } from "./settings-form";
 import {
   Breadcrumb,
@@ -17,6 +18,7 @@ export default async function SettingsPage() {
     const packages = await getPackages();
     const promotions = await getPromotions();
     const announcements = await getAnnouncements();
+    const popupSettings = await getPopupSettings();
 
     return (
         <div className="space-y-4">
@@ -36,7 +38,12 @@ export default async function SettingsPage() {
                 <h1 className="text-2xl font-semibold font-headline">Application Settings</h1>
             </div>
             
-            <SettingsForm packages={packages} promotions={promotions} announcements={announcements} />
+            <SettingsForm 
+                packages={packages} 
+                promotions={promotions} 
+                announcements={announcements} 
+                popupSettings={popupSettings}
+            />
         </div>
     )
 }

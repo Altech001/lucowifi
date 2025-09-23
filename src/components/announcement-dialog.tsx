@@ -11,38 +11,41 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Gift, PartyPopper } from 'lucide-react';
+import { PartyPopper } from 'lucide-react';
+import type { PopupSettings } from '@/lib/definitions';
 
-const announcements = [
-    {
-        title: "Daily Prize Draw!",
-        description: "Every voucher purchase today enters you into a draw to win 1GB of bonus data. Winner announced at 8 PM!",
-    },
-    {
-        title: "Weekend Special",
-        description: "Buy any package over 5,000 UGX this weekend and get a free 1-hour voucher for a friend.",
-    },
-    {
-        title: "Speed Boost Active",
-        description: "We've boosted network speeds by 20% across all locations for the next 48 hours. Enjoy the fast lane!",
-    }
-];
+const POPUP_SEEN_KEY = 'luco-popup-seen-today';
 
-// Get a consistent announcement for the day
-const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-const announcement = announcements[dayOfYear % announcements.length];
+type AnnouncementDialogProps = {
+  settings: PopupSettings;
+}
 
-
-export function AnnouncementDialog() {
+export function AnnouncementDialog({ settings }: AnnouncementDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    if (!settings.isEnabled || !settings.title) {
+        return;
+    }
+
+    const lastSeen = localStorage.getItem(POPUP_SEEN_KEY);
+    const today = new Date().toDateString();
+
+    if (lastSeen === today) {
+        return;
+    }
+
     const timer = setTimeout(() => {
       setIsOpen(true);
+      localStorage.setItem(POPUP_SEEN_KEY, today);
     }, 1500); // Delay opening for 1.5 seconds
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [settings]);
+
+  if (!settings.isEnabled || !settings.title) {
+      return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -52,10 +55,10 @@ export function AnnouncementDialog() {
                 <PartyPopper className="h-16 w-16 text-primary animate-in fade-in-50 slide-in-from-top-10 duration-700" />
             </div>
           <DialogTitle className="text-center font-headline text-2xl">
-            {announcement.title}
+            {settings.title}
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
-            {announcement.description}
+            {settings.description}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-center pt-4">

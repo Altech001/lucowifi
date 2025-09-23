@@ -2,8 +2,8 @@
 
 
 import { db } from './firebase';
-import { ref, get, child } from 'firebase/database';
-import type { Package, Voucher, Membership, Promotion, Announcement } from './definitions';
+import { ref, get, child, set } from 'firebase/database';
+import type { Package, Voucher, Membership, Promotion, Announcement, PopupSettings } from './definitions';
 import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-fns';
 
 export async function getPackages(): Promise<Package[]> {
@@ -212,4 +212,29 @@ export async function getAnnouncements(): Promise<Announcement[]> {
         console.error("Error fetching announcements:", error);
         return [];
     }
+}
+
+export async function getPopupSettings(): Promise<PopupSettings> {
+    const dbRef = ref(db, 'settings/popup');
+    const defaultSettings: PopupSettings = {
+        isEnabled: false,
+        title: '',
+        description: ''
+    };
+
+    try {
+        const snapshot = await get(dbRef);
+        if (snapshot.exists()) {
+            return snapshot.val() as PopupSettings;
+        }
+        return defaultSettings;
+    } catch (error) {
+        console.error("Error fetching popup settings:", error);
+        return defaultSettings;
+    }
+}
+
+export async function updatePopupSettings(settings: PopupSettings): Promise<void> {
+    const dbRef = ref(db, 'settings/popup');
+    await set(dbRef, settings);
 }

@@ -48,3 +48,9 @@ export type Announcement = {
   showImage?: boolean;
   createdAt: string;
 };
+
+export type PopupSettings = {
+  isEnabled: boolean;
+  title: string;
+  description: string;
+};
