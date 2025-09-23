@@ -58,7 +58,7 @@ export function MembersTable({ members }: MembersTableProps) {
       .sort((a, b) => parseISO(b.createdAt).getTime() - parseISO(a.createdAt).getTime());
   }, [members, filter]);
 
-  const handleAction = (action: (id: string) => Promise<{ success: boolean; message: string }>, memberId: string) => {
+  const onAction = async (action: (id: string) => Promise<{ success: boolean; message: string }>, memberId: string) => {
     startTransition(async () => {
         const result = await action(memberId);
         toast({
@@ -172,7 +172,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                     <DropdownMenuSeparator />
                                      {member.status === 'pending' && (
                                         <>
-                                            <DropdownMenuItem onClick={() => handleAction(approveMembershipAction, member.id)}>
+                                            <DropdownMenuItem onClick={() => onAction(approveMembershipAction, member.id)}>
                                                 <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                                                 Approve
                                             </DropdownMenuItem>
@@ -185,7 +185,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                         </>
                                      )}
                                      {member.status === 'rejected' && (
-                                        <DropdownMenuItem onClick={() => handleAction(approveMembershipAction, member.id)}>
+                                        <DropdownMenuItem onClick={() => onAction(approveMembershipAction, member.id)}>
                                             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                                             Re-Approve
                                         </DropdownMenuItem>
@@ -209,7 +209,7 @@ export function MembersTable({ members }: MembersTableProps) {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <Button variant="destructive" onClick={() => handleAction(rejectMembershipAction, member.id)}>
+                                    <Button variant="destructive" onClick={() => onAction(rejectMembershipAction, member.id)}>
                                         Confirm Rejection
                                     </Button>
                                 </AlertDialogFooter>
