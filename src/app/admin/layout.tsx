@@ -61,8 +61,33 @@ export default function AdminLayout({
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           {/* Breadcrumb can be dynamically populated by child pages */}
         </header>
-        <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
+        <main className="flex-1 p-4 sm:px-6 sm:py-0 pb-20 sm:pb-0">{children}</main>
       </div>
+      {/* Mobile Bottom Nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 sm:hidden">
+            <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
+                <Link href="/" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                    <Home className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Home</span>
+                </Link>
+                <Link href="/admin" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                    <Ticket className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Vouchers</span>
+                </Link>
+                <Link href="/admin/active-vouchers" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                    <Users className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Active</span>
+                </Link>
+                <Link href="/admin/members" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                    <UserCog className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Members</span>
+                </Link>
+                <Link href="/admin/analyze" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
+                    <BarChart className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Analyze</span>
+                </Link>
+            </div>
+      </nav>
     </div>
   );
 }
