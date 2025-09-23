@@ -1,16 +1,33 @@
-import { packages } from "@/lib/data";
-import Link from "next/link";
+
+'use client';
+
+import { useState } from 'react';
+import { packages } from '@/lib/data';
+import type { Package } from '@/lib/data';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+} from '@/components/ui/card';
+import { CheckCircle } from 'lucide-react';
+import { PurchaseDialog } from '@/components/purchase-dialog';
 
 export default function Home() {
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const handleCardClick = (pkg: Package) => {
+    setSelectedPackage(pkg);
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setSelectedPackage(null);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8">
       <header className="text-center mb-10">
@@ -24,31 +41,43 @@ export default function Home() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {packages.map((pkg) => (
-          <Link href={`/packages/${pkg.slug}`} key={pkg.slug} className="group flex">
-            <Card className="flex flex-col w-full transition-all duration-300 ease-in-out border-2 border-transparent group-hover:border-primary group-focus:border-primary group-focus:ring-2 group-focus:ring-primary/50">
-              <CardHeader className="p-4">
-                <CardTitle className="font-headline text-lg sm:text-xl">{pkg.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-center items-center p-4 pt-0">
-                <div className="text-center">
-                  <span className="text-3xl sm:text-4xl font-bold font-headline">UGX {pkg.price.toLocaleString()}</span>
-                  {pkg.slug.includes('month') && <span className="text-xs text-muted-foreground block"> / month</span>}
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 bg-muted/50 border-t">
-                 <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground w-full">
-                    {pkg.details.slice(0, 2).map((detail, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary shrink-0" />
-                        <span className="truncate">{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-              </CardFooter>
-            </Card>
-          </Link>
+           <Card 
+            key={pkg.slug}
+            className="flex flex-col w-full transition-all duration-300 ease-in-out border-2 border-transparent hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/50 cursor-pointer group"
+            onClick={() => handleCardClick(pkg)}
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleCardClick(pkg)}
+          >
+            <CardHeader className="p-4">
+              <CardTitle className="font-headline text-lg sm:text-xl">{pkg.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col justify-center items-center p-4 pt-0">
+              <div className="text-center">
+                <span className="text-3xl sm:text-4xl font-bold font-headline">UGX {pkg.price.toLocaleString()}</span>
+                {pkg.slug.includes('month') && <span className="text-xs text-muted-foreground block"> / month</span>}
+              </div>
+            </CardContent>
+            <CardFooter className="p-4 bg-muted/50 border-t mt-auto">
+               <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground w-full">
+                  {pkg.details.slice(0, 2).map((detail, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                      <span className="truncate">{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+            </CardFooter>
+          </Card>
         ))}
       </div>
+
+      {selectedPackage && (
+        <PurchaseDialog
+          isOpen={isDialogOpen}
+          onClose={handleDialogClose}
+          packageInfo={selectedPackage}
+        />
+      )}
     </div>
   );
 }
