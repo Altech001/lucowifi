@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 
 const announcements = [
-  'Limited-Time Offers Available Now! (04-12)',
-  'Notice Regarding the Withdrawals of Frax Share (FXS) via BNB (04-12)',
-  'Binance Completes Integration of Tether (USDT) on NEAR Protocol (04-12)',
+  'Get 20% off on all monthly plans this week!',
+  'New high-speed hotspot now live at Acacia Mall!',
+  'Refer a friend and get 5GB of data for free!',
 ];
 
 export function AnnouncementBar() {
