@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { packages } from '@/lib/data';
 import type { Package } from '@/lib/data';
 import {
@@ -17,10 +18,15 @@ import { PurchaseDialog } from '@/components/purchase-dialog';
 export default function Home() {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const router = useRouter();
 
   const handleCardClick = (pkg: Package) => {
-    setSelectedPackage(pkg);
-    setDialogOpen(true);
+    if (pkg.slug === 'monthly-membership') {
+      router.push('/membership');
+    } else {
+      setSelectedPackage(pkg);
+      setDialogOpen(true);
+    }
   };
 
   const handleDialogClose = () => {

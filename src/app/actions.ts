@@ -1,11 +1,14 @@
+
 'use server';
 
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { sendWhatsappVoucher } from '@/ai/flows/whatsapp-voucher-delivery';
 import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
+import { membershipSignup } from '@/ai/flows/membership-signup';
 
 const phoneSchema = z.string().min(10, { message: 'Phone number seems too short.' }).regex(/^\+[1-9]\d{1,14}$/, { message: 'Please provide a valid phone number with country code.' });
+const nameSchema = z.string().min(2, { message: 'Name must be at least 2 characters.' });
 
 export async function purchaseVoucherAction(
   prevState: { message: string; success: boolean },
@@ -78,5 +81,44 @@ export async function analyzeProfileAction(
   } catch (error) {
     console.error('Profile analysis failed:', error);
     return { message: 'An unexpected error occurred during analysis.', success: false };
+  }
+}
+
+const membershipSchema = z.object({
+  name: nameSchema,
+  phoneNumber: phoneSchema,
+});
+
+export async function createMembershipAction(
+  prevState: { message: string; success: boolean },
+  formData: FormData
+): Promise<{ message: string; success: boolean }> {
+  const rawFormData = {
+    name: formData.get('name'),
+    phoneNumber: formData.get('phoneNumber'),
+  };
+
+  const validation = membershipSchema.safeParse(rawFormData);
+
+  if (!validation.success) {
+    return { message: validation.error.errors[0].message, success: false };
+  }
+
+  const { name, phoneNumber } = validation.data;
+
+  try {
+    const result = await membershipSignup({
+      name,
+      phoneNumber,
+    });
+
+    if (result.success) {
+      redirect(`/membership/success?name=${encodeURIComponent(name)}`);
+    } else {
+      return { message: result.message || 'Failed to create membership.', success: false };
+    }
+  } catch (error) {
+    console.error('Membership signup failed:', error);
+    return { message: 'An unexpected error occurred during membership signup.', success: false };
   }
 }
