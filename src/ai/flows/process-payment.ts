@@ -70,12 +70,17 @@ const processPaymentTool = ai.defineTool(
             try {
                 const responseData = JSON.parse(responseDataText);
                 
-                // Extract transaction status from nested XML if it exists
+                // Extract transaction status and reference from nested XML if it exists
                 let transactionStatus = 'UNKNOWN';
+                let transactionReference = null;
                 if (responseData.response && typeof responseData.response === 'string') {
-                    const match = responseData.response.match(/<TransactionStatus>(.*?)<\/TransactionStatus>/);
-                    if (match && match[1]) {
-                        transactionStatus = match[1];
+                    const statusMatch = responseData.response.match(/<TransactionStatus>(.*?)<\/TransactionStatus>/);
+                    if (statusMatch && statusMatch[1]) {
+                        transactionStatus = statusMatch[1];
+                    }
+                    const refMatch = responseData.response.match(/<TransactionReference>(.*?)<\/TransactionReference>/);
+                     if (refMatch && refMatch[1]) {
+                        transactionReference = refMatch[1];
                     }
                 }
 
@@ -83,7 +88,11 @@ const processPaymentTool = ai.defineTool(
                      return {
                         success: true,
                         message: responseData.message || 'Payment initiated successfully.',
-                        data: { ...responseData, TransactionStatus: transactionStatus },
+                        data: { 
+                            ...responseData, 
+                            TransactionStatus: transactionStatus,
+                            TransactionReference: transactionReference,
+                        },
                     };
                 } else {
                      return {
