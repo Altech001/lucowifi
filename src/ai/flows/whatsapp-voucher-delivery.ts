@@ -30,6 +30,25 @@ export async function sendWhatsappVoucher(input: SendWhatsappVoucherInput): Prom
   return sendWhatsappVoucherFlow(input);
 }
 
+
+// Helper function to format phone number
+function formatPhoneNumber(phoneNumber: string): string {
+  // Remove any spaces, dashes or other characters
+  const cleaned = phoneNumber.replace(/\D/g, '');
+  
+  // If number starts with 0, replace it with 256
+  if (cleaned.startsWith('0')) {
+    return '256' + cleaned.substring(1);
+  }
+  
+  // If number starts with +, remove it
+  if (cleaned.startsWith('+')) {
+      return cleaned.substring(1);
+  }
+  
+  return cleaned;
+}
+
 const sendWhatsappMessage = ai.defineTool(
   {
     name: 'sendWhatsappMessage',
@@ -45,21 +64,57 @@ const sendWhatsappMessage = ai.defineTool(
       message: z.string().describe('The message returned by the service.'),
     }),
   },
-  async input => {
-    // Placeholder implementation for sending the WhatsApp message.
-    // In a real application, this would integrate with a WhatsApp Business API provider.
-    console.log(`Sending WhatsApp message to ${input.phoneNumber}: ${input.message}`);
-    // Simulate a potential failure
-    if (input.phoneNumber.includes('FAIL')) {
-        return {
+  async ({ phoneNumber, message }) => {
+      const url = 'https://lucosms-api.onrender.com/api/v1/client/send-sms';
+      const apiKey = 'Luco_0gStE1K11IqewVsR9brZY76GfIK2rzve';
+
+      const formattedNumber = formatPhoneNumber(phoneNumber);
+      
+      console.log('Sending SMS to:', formattedNumber);
+      console.log('Message content:', message);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+            'X-API-Key': apiKey
+          },
+          body: JSON.stringify({
+            message: message,
+            recipients: [formattedNumber]
+          })
+        });
+
+        const data = await response.json();
+        console.log('SMS API response:', data);
+
+        if (!response.ok || data.status !== 'success') {
+          console.error('SMS API error:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: data,
+          });
+           return {
             success: false,
-            message: `Simulated failure sending message to ${input.phoneNumber}`
+            message: data.detail || `Failed to send SMS. API returned status ${response.status}.`,
+          };
         }
-    }
-    return {
-      success: true,
-      message: `Message sent successfully to ${input.phoneNumber}`,
-    };
+        
+        return {
+          success: true,
+          message: `Message successfully sent to ${phoneNumber}.`
+        };
+
+      } catch (error) {
+        console.error('SMS sending error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+        return {
+          success: false,
+          message: `Failed to send message: ${errorMessage}`
+        };
+      }
   }
 );
 
