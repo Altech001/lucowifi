@@ -898,6 +898,7 @@ export type ProcessPaymentOutput = {
 type PaymentActionState = {
   message: string;
   success: boolean;
+  data?: any;
 };
 
 const paymentSchema = z.object({
@@ -931,6 +932,7 @@ export async function initiatePaymentAction(prevState: PaymentActionState, formD
         return {
             success: result.success,
             message: result.message,
+            data: result.data,
         };
     } catch (error) {
         console.error("Payment initiation action failed:", error);

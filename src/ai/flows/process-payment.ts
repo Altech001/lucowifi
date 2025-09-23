@@ -22,13 +22,7 @@ const processPaymentTool = ai.defineTool(
     {
         name: 'processPaymentTool',
         description: 'Initiates a payment with the payment provider.',
-        inputSchema: z.object({
-            amount: z.string(),
-            number: z.string(),
-            ref: z.string(),
-            username: z.string(),
-            password: z.string(),
-        }),
+        inputSchema: z.custom<ProcessPaymentInput>(),
         outputSchema: z.custom<ProcessPaymentOutput>(),
     },
     async (payload) => {
@@ -40,8 +34,11 @@ const processPaymentTool = ai.defineTool(
             return { success: false, message };
         }
 
+        // Use real, valid URLs as placeholders
         const successUrl = 'https://www.google.com/search?q=success';
         const failedUrl = 'https://www.google.com/search?q=failed';
+        
+        // Ensure amount is a string of an integer
         const formattedAmount = parseInt(payload.amount, 10).toString();
 
         const body = {
@@ -72,11 +69,21 @@ const processPaymentTool = ai.defineTool(
 
             try {
                 const responseData = JSON.parse(responseDataText);
-                if (responseData.status === 'success' || responseData.success || responseData.message === 'Payment successful') {
+                
+                // Extract transaction status from nested XML if it exists
+                let transactionStatus = 'UNKNOWN';
+                if (responseData.response && typeof responseData.response === 'string') {
+                    const match = responseData.response.match(/<TransactionStatus>(.*?)<\/TransactionStatus>/);
+                    if (match && match[1]) {
+                        transactionStatus = match[1];
+                    }
+                }
+
+                 if (responseData.message === 'Payment successful') {
                      return {
                         success: true,
                         message: responseData.message || 'Payment initiated successfully.',
-                        data: responseData,
+                        data: { ...responseData, TransactionStatus: transactionStatus },
                     };
                 } else {
                      return {
@@ -86,15 +93,24 @@ const processPaymentTool = ai.defineTool(
                     };
                 }
             } catch (jsonError) {
+                 // Handle cases where the response is not valid JSON, but the request was successful (status 200)
                  return {
                     success: true,
-                    message: 'Payment initiated. Response was not in JSON format.',
+                    message: 'Payment initiated. The response from the provider was not in a standard JSON format.',
                     data: responseDataText,
                 };
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to call payment API:', error);
+            // Handle fetch-specific errors (e.g., network issues)
+            if (error.cause) {
+                // Node.js fetch can wrap network errors in a cause property
+                return {
+                    success: false,
+                    message: `Failed to initiate payment: A network error occurred (${error.cause.code})`,
+                };
+            }
             const errorMessage = error instanceof Error ? error.message : 'An unknown network error occurred.';
             return {
                 success: false,
