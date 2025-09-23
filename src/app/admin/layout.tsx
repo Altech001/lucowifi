@@ -11,73 +11,78 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-16 flex-col border-r bg-background sm:flex mt-4">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5 flex-1">
-          <Link
-            href="/admin"
-            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-          >
-            <Package className="h-4 w-4 transition-all group-hover:scale-110" />
-            <span className="sr-only">Luco WIFI</span>
-          </Link>
-           <Link
-            href="/admin"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Ticket className="h-5 w-5" />
-            <span className="sr-only">Vouchers</span>
-          </Link>
-          <Link
-            href="/admin/active-vouchers"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Users className="h-5 w-5" />
-            <span className="sr-only">Active Vouchers</span>
-          </Link>
-           <Link
-            href="/admin/members"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <UserCog className="h-5 w-5" />
-            <span className="sr-only">Members</span>
-          </Link>
-          <Link
-            href="/admin/analyze"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <BarChart className="h-5 w-5" />
-            <span className="sr-only">Analyze Profiles</span>
-          </Link>
-          <Link
-            href="/admin/settings"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Settings className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
-          </Link>
-           <div className="mt-auto">
-            <form action={logout}>
-                <Button variant="ghost" size="icon" type="submit" className="w-9 h-9 md:h-8 md:w-8">
-                    <LogOut className="h-5 w-5" />
-                    <span className="sr-only">Logout</span>
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="hidden border-r bg-muted/40 md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <Link href="/admin" className="flex items-center gap-2 font-semibold">
+              <Package className="h-6 w-6 text-primary" />
+              <span className="">Luco WIFI</span>
+            </Link>
+          </div>
+          <div className="flex-1">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <Ticket className="h-4 w-4" />
+                Vouchers
+              </Link>
+              <Link
+                href="/admin/active-vouchers"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <Users className="h-4 w-4" />
+                Active Vouchers
+              </Link>
+              <Link
+                href="/admin/members"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <UserCog className="h-4 w-4" />
+                Members
+              </Link>
+              <Link
+                href="/admin/analyze"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <BarChart className="h-4 w-4" />
+                Analyze
+              </Link>
+               <Link
+                href="/admin/settings"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+            </nav>
+          </div>
+          <div className="mt-auto p-4">
+             <form action={logout}>
+                <Button size="sm" className="w-full" type="submit">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
                 </Button>
             </form>
-           </div>
-        </nav>
-      </aside>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-16">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          {/* Breadcrumb can be dynamically populated by child pages */}
-        </header>
-        <main className="flex-1 p-4 sm:px-6 sm:py-0 pb-20 sm:pb-0">{children}</main>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col">
+         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            {/* Can be used for mobile nav toggle or breadcrumbs */}
+         </header>
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+          {children}
+        </main>
       </div>
       {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 sm:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 md:hidden">
             <div className="grid h-full max-w-lg grid-cols-3 mx-auto">
                 <Link href="/admin" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
-                    <Home className="w-5 h-5 mb-1 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Home</span>
+                    <Ticket className="w-5 h-5 mb-1 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Vouchers</span>
                 </Link>
                 <Link href="/admin/active-vouchers" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Users className="w-5 h-5 mb-1 text-muted-foreground" />
