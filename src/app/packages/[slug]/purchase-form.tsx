@@ -1,7 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom';
-import { useEffect } from 'react';
+import { useActionState, useEffect } from 'react';
 import { purchaseVoucherAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,7 @@ const initialState = {
 };
 
 export function PurchaseForm() {
-  const [state, formAction] = useFormState(purchaseVoucherAction, initialState);
+  const [state, formAction] = useActionState(purchaseVoucherAction, initialState);
   const { toast } = useToast();
 
   useEffect(() => {

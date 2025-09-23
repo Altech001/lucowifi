@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { useEffect, useRef } from "react";
 import { analyzeProfileAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
@@ -19,12 +19,12 @@ const initialState = {
 };
 
 export function AnalysisForm() {
-    const [state, formAction] = useFormState(analyzeProfileAction, initialState);
+    const [state, formAction] = useActionState(analyzeProfileAction, initialState);
     const { toast } = useToast();
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
-        if (state.message) {
+        if (state.message && !state.success) {
             toast({
                 variant: "destructive",
                 title: "Analysis Failed",
