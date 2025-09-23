@@ -348,12 +348,16 @@ export async function createPackageAction(prevState: CreatePackageState, formDat
     }
     
     const slug = generateSlug(name);
+    
+    // Split by newlines or commas, then trim whitespace and filter out empty strings.
+    const detailsList = details.split(/[\n,]/).map(d => d.trim()).filter(d => d);
+
 
     const newPackage: Omit<Package, 'slug' | 'imageId'> = {
         name,
         price: parseInt(price, 10),
         description,
-        details: details.split('\n').map(d => d.trim()).filter(d => d),
+        details: detailsList,
         durationHours: parseInt(durationHours, 10),
     };
     
@@ -574,6 +578,8 @@ export async function rejectMembershipAction(
     return { message: "Failed to reject membership.", success: false };
   }
 }
+    
+
     
 
     
