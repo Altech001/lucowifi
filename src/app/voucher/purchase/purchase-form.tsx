@@ -54,7 +54,7 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
 
   if (state.existingVouchers && state.existingVouchers.length > 0) {
     return (
-        <Alert variant="default" className="border-primary">
+        <Alert variant="default" className="border-primary border-dashed">
             <History className="h-4 w-4" />
             <AlertTitle className="font-headline">Your Voucher History</AlertTitle>
             <AlertDescription className="space-y-4">
