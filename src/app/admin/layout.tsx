@@ -74,7 +74,7 @@ export default function AdminLayout({
       </div>
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background p-2 sm:hidden">
-            <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
+            <div className="grid h-full max-w-lg grid-cols-3 mx-auto">
                 <Link href="/admin" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Home className="w-5 h-5 mb-1 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Home</span>
@@ -82,14 +82,6 @@ export default function AdminLayout({
                 <Link href="/admin/active-vouchers" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Users className="w-5 h-5 mb-1 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Active</span>
-                </Link>
-                <Link href="/admin/members" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
-                    <UserCog className="w-5 h-5 mb-1 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Members</span>
-                </Link>
-                <Link href="/admin/analyze" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
-                    <BarChart className="w-5 h-5 mb-1 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Analyze</span>
                 </Link>
                  <Link href="/admin/settings" className="inline-flex flex-col items-center justify-center px-4 hover:bg-muted rounded-lg">
                     <Settings className="w-5 h-5 mb-1 text-muted-foreground" />
