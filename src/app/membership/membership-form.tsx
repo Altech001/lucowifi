@@ -85,11 +85,11 @@ export function MembershipForm() {
                 <CardTitle className="font-headline text-2xl">Signup Successful!</CardTitle>
                 <CardDescription>{state.message}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex flex-col items-center">
                 <p className="text-sm text-muted-foreground">
                     Please use these temporary credentials for 1-day access while we approve your membership.
                 </p>
-                <div className="space-y-3 rounded-lg border-2 border-dashed p-4">
+                <div className="space-y-3 rounded-lg border-2 border-dashed p-4 w-full">
                     <div>
                         <Label className="text-xs text-muted-foreground">Temporary Username</Label>
                         <p className="text-lg font-mono font-bold text-primary">{state.tempUsername}</p>
