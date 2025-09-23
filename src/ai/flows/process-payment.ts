@@ -44,7 +44,7 @@ const processPaymentTool = ai.defineTool(
         const body = {
             amount: formattedAmount,
             number: payload.number,
-            refer: payload.ref, // Changed back from 'ref' to 'refer'
+            refer: payload.ref,
             username: payload.username,
             password: payload.password,
             success: successUrl,
@@ -84,7 +84,7 @@ const processPaymentTool = ai.defineTool(
                     }
                 }
 
-                 if (responseData.message === 'Payment successful') {
+                 if (transactionStatus !== 'FAILED') {
                      return {
                         success: true,
                         message: responseData.message || 'Payment initiated successfully.',
