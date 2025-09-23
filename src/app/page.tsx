@@ -49,7 +49,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-center items-center p-4 pt-0">
               <div className="text-center">
-                <span className="text-3xl sm:text-4xl font-bold font-headline">UGX {pkg.price.toLocaleString()}</span>
+                <span className="text-2xl sm:text-3xl font-bold font-headline">UGX {pkg.price.toLocaleString()}</span>
                 {pkg.slug.includes('month') && <span className="text-xs text-muted-foreground block"> / month</span>}
               </div>
             </CardContent>
