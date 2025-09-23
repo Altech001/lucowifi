@@ -14,8 +14,6 @@ import { Button } from '@/components/ui/button';
 import { PartyPopper } from 'lucide-react';
 import type { PopupSettings } from '@/lib/definitions';
 
-const POPUP_SEEN_KEY = 'luco-popup-seen-today';
-
 type AnnouncementDialogProps = {
   settings: PopupSettings;
 }
@@ -28,16 +26,8 @@ export function AnnouncementDialog({ settings }: AnnouncementDialogProps) {
         return;
     }
 
-    const lastSeen = localStorage.getItem(POPUP_SEEN_KEY);
-    const today = new Date().toDateString();
-
-    if (lastSeen === today) {
-        return;
-    }
-
     const timer = setTimeout(() => {
       setIsOpen(true);
-      localStorage.setItem(POPUP_SEEN_KEY, today);
     }, 1500); // Delay opening for 1.5 seconds
 
     return () => clearTimeout(timer);
