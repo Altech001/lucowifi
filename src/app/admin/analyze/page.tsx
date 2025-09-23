@@ -4,19 +4,14 @@ import { FileText } from "lucide-react";
 
 export default function AnalyzePage() {
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-3">
-                    <FileText className="h-6 w-6" />
-                    <CardTitle className="font-headline text-2xl">Analyze Mikrotik Profiles</CardTitle>
-                </div>
-                <CardDescription>
+        <>
+            <div className="mb-4">
+                <h1 className="text-2xl font-semibold font-headline">Analyze Mikrotik Profiles</h1>
+                <p className="text-sm text-muted-foreground">
                     Upload a CSV file containing user profile data. Our AI will analyze it and suggest the most suitable voucher package.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <AnalysisForm />
-            </CardContent>
-        </Card>
+                </p>
+            </div>
+            <AnalysisForm />
+        </>
     )
 }
