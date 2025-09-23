@@ -25,7 +25,7 @@ const processPaymentTool = ai.defineTool(
         inputSchema: z.object({
             amount: z.string(),
             number: z.string(),
-            refer: z.string(),
+            ref: z.string(),
             username: z.string(),
             password: z.string(),
         }),
@@ -47,11 +47,11 @@ const processPaymentTool = ai.defineTool(
         const body = {
             amount: payload.amount,
             number: payload.number,
-            refer: payload.refer,
+            ref: payload.ref,
             username: payload.username,
             password: payload.password,
-            'success-re-url': successUrl,
-            'failed-re-url': failedUrl,
+            success: successUrl,
+            failed: failedUrl,
         };
 
         try {
@@ -113,11 +113,11 @@ const processPaymentFlow = ai.defineFlow(
   },
   async (input) => {
     // Generate a unique reference for the transaction
-    const refer = `luco-wifi-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const ref = `luco-wifi-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     const result = await processPaymentTool({
         ...input,
-        refer,
+        ref,
         username: input.username,
         password: input.password
     });
