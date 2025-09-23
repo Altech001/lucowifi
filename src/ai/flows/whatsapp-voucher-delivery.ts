@@ -70,34 +70,15 @@ const sendWhatsappVoucherFlow = ai.defineFlow(
     outputSchema: SendWhatsappVoucherOutputSchema,
     tools: [sendWhatsappMessage],
   },
-  async input => {
-    const prompt = `
-You are a helpful assistant for Luco WIFI.
-A user has purchased a voucher. Your task is to send them their voucher code via WhatsApp.
-The user's phone number is: ${input.phoneNumber}
-The voucher code is: ${input.voucherCode}
+  async ({ phoneNumber, voucherCode }) => {
+    const message = `Your Luco WIFI voucher code is: ${voucherCode}`;
 
-Use the provided tool to send the WhatsApp message.
-The message should be friendly and clear, stating "Your Luco WIFI voucher code is: [voucher code]".
-`;
-
-    const {output} = await ai.generate({
-      prompt: prompt,
-      history: [],
-      tools: [sendWhatsappMessage],
+    // Directly call the tool for a more reliable result.
+    const result = await sendWhatsappMessage({
+      phoneNumber,
+      message,
     });
-
-    // The model should call the tool. We need to find the tool call result.
-    const toolResponse = output.history[1]?.toolResponse;
-
-    if (toolResponse && toolResponse[0].output) {
-      return toolResponse[0].output as SendWhatsappVoucherOutput;
-    }
     
-    // Fallback if the model fails to call the tool correctly.
-    return {
-        success: false,
-        message: 'Failed to trigger WhatsApp message tool.'
-    }
+    return result;
   }
 );
