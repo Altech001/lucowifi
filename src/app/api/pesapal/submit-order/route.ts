@@ -3,27 +3,20 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { CONFIG } from '@/lib/config';
 import { NextResponse } from 'next/server';
-
-// Helper function to get the base URL for API calls within the server
-function getBaseUrl() {
-    if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`;
-    }
-    return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-}
+import { getPesapalToken } from '@/app/api/pesapal/token/route';
+import { registerIpn } from '@/app/api/pesapal/register-ipn/route';
 
 
 export async function POST(req: Request) {
   const { amount, email, phone_number, first_name, last_name, package_slug } = await req.json();
 
   try {
-    const appBaseUrl = getBaseUrl();
-    const tokenResponse = await axios.get(`${appBaseUrl}/api/pesapal/token`);
-    const token = tokenResponse.data.token;
+    // 1. Get Token directly
+    const token = await getPesapalToken();
 
-    const ipnResponse = await axios.post(`${appBaseUrl}/api/pesapal/register-ipn`);
-    const ipn_id = ipnResponse.data.ipn_id;
-
+    // 2. Register IPN directly
+    const ipn_id = await registerIpn();
+    
     // Use a unique ID for the merchant reference
     const merchantReference = uuidv4();
 

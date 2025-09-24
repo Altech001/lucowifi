@@ -8,36 +8,47 @@ let cache = {
   access_token_expiry: null as number | null,
 };
 
-export async function GET(req: Request) {
-  try {
+export async function getPesapalToken(): Promise<string> {
     // Check if token is cached and not expired
     if (cache.access_token && cache.access_token_expiry && cache.access_token_expiry > Date.now()) {
-      return NextResponse.json({ token: cache.access_token });
+      return cache.access_token;
     }
 
-    const response = await axios.post(
-      CONFIG.TOKEN_URL,
-      {
-        consumer_key: process.env.PESAPAL_CONSUMER_KEY,
-        consumer_secret: process.env.PESAPAL_CONSUMER_SECRET,
-      },
-      {
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      }
-    );
+    try {
+        const response = await axios.post(
+            CONFIG.TOKEN_URL,
+            {
+                consumer_key: process.env.PESAPAL_CONSUMER_KEY,
+                consumer_secret: process.env.PESAPAL_CONSUMER_SECRET,
+            },
+            {
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            }
+        );
 
-    const { token, expiryDate } = response.data;
-    if (!token || !expiryDate) {
-      throw new Error('Token or expiryDate not found');
+        const { token, expiryDate } = response.data;
+        if (!token || !expiryDate) {
+            throw new Error('Token or expiryDate not found in Pesapal response');
+        }
+
+        const expiry = new Date(expiryDate.replace('Z', '+00:00')).getTime();
+        cache.access_token = token;
+        cache.access_token_expiry = expiry;
+
+        return token;
+    } catch(error: any) {
+        console.error('Error fetching access token:', error.message);
+        const errorDetails = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+        throw new Error(`Failed to fetch access token. Details: ${errorDetails}`);
     }
+}
 
-    const expiry = new Date(expiryDate.replace('Z', '+00:00')).getTime();
-    cache.access_token = token;
-    cache.access_token_expiry = expiry;
 
+export async function GET(req: Request) {
+  try {
+    const token = await getPesapalToken();
     return NextResponse.json({ token });
   } catch (error: any) {
-    console.error('Error fetching access token:', error.message);
-    return NextResponse.json({ error: 'Failed to fetch access token', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
