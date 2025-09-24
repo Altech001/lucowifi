@@ -1,7 +1,7 @@
 
 import { getPackages } from '@/lib/database-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PurchaseForm } from './purchase-form';
+import { PaymentForm } from './payment-form'; // UPDATED
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import {
@@ -66,11 +66,11 @@ export default async function PurchasePage({ searchParams }: { searchParams: { [
                             Purchase: <span className="text-primary">{selectedPackage.name}</span>
                         </CardTitle>
                         <CardDescription>
-                            Enter your WhatsApp phone number to receive your voucher code for UGX {selectedPackage.price.toLocaleString()}.
+                           Complete your purchase for UGX {selectedPackage.price.toLocaleString()}. Your voucher will be sent via WhatsApp.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <PurchaseForm packageSlug={selectedPackage.slug} />
+                        <PaymentForm selectedPackage={selectedPackage} />
                     </CardContent>
                 </Card>
             </div>

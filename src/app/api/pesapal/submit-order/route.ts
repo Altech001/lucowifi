@@ -6,20 +6,15 @@ import { NextResponse } from 'next/server';
 
 // Helper function to get the base URL for API calls within the server
 function getBaseUrl() {
-    if (process.env.NEXT_PUBLIC_BASE_URL) {
-        return process.env.NEXT_PUBLIC_BASE_URL;
-    }
-    // Fallback for Vercel environments
     if (process.env.VERCEL_URL) {
         return `https://${process.env.VERCEL_URL}`;
     }
-    // Fallback for local development
-    return 'http://localhost:9002';
+    return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
 }
 
 
 export async function POST(req: Request) {
-  const { amount, email, phone_number, first_name, last_name } = await req.json();
+  const { amount, email, phone_number, first_name, last_name, package_slug } = await req.json();
 
   try {
     const appBaseUrl = getBaseUrl();
@@ -29,20 +24,23 @@ export async function POST(req: Request) {
     const ipnResponse = await axios.post(`${appBaseUrl}/api/pesapal/register-ipn`);
     const ipn_id = ipnResponse.data.ipn_id;
 
+    // Use a unique ID for the merchant reference
+    const merchantReference = uuidv4();
+
     const response = await axios.post(
       CONFIG.SUBMIT_ORDER_URL,
       {
-        id: uuidv4(),
+        id: merchantReference, // Use our generated UUID here
         currency: 'UGX',
         amount,
-        description: 'Payment for WIFI Voucher',
+        description: `Luco WIFI Voucher: ${package_slug}`,
         callback_url: `${CONFIG.CALLBACK_BASE_URL}/payment-callback`,
         notification_id: ipn_id,
         billing_address: {
           email_address: email,
-          phone_number,
-          first_name,
-          last_name,
+          phone_number: phone_number,
+          first_name: first_name,
+          last_name: last_name,
         },
       },
       {
@@ -53,6 +51,10 @@ export async function POST(req: Request) {
         },
       }
     );
+
+    // TODO: Store the merchantReference, package_slug, and customer phone number in your database
+    // This is critical for assigning the voucher after a successful payment IPN.
+    // For example: await savePendingOrder(merchantReference, package_slug, phone_number);
 
     return NextResponse.json({
       message: 'Order initiated successfully',

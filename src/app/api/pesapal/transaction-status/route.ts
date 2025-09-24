@@ -6,15 +6,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Helper function to get the base URL for API calls within the server
 function getBaseUrl() {
-    if (process.env.NEXT_PUBLIC_BASE_URL) {
-        return process.env.NEXT_PUBLIC_BASE_URL;
-    }
-    // Fallback for Vercel environments
     if (process.env.VERCEL_URL) {
         return `https://${process.env.VERCEL_URL}`;
     }
-    // Fallback for local development
-    return 'http://localhost:9002';
+    return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
 }
 
 export async function GET(req: NextRequest) {
