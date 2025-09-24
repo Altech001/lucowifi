@@ -18,8 +18,9 @@ export async function getPesapalToken(): Promise<string> {
         const response = await axios.post(
             CONFIG.TOKEN_URL,
             {
-                consumer_key: process.env.PESAPAL_CONSUMER_KEY,
-                consumer_secret: process.env.PESAPAL_CONSUMER_SECRET,
+                // FIX: Hardcode sandbox credentials for testing as .env is not loading them.
+                consumer_key: "BopfGlE7GfenAqGvS5SGdke4M67WLFxh",
+                consumer_secret: "nnYh5QSFZUXRsQu6PQI4llLB5iU=",
             },
             {
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
