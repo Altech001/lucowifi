@@ -93,7 +93,7 @@ export function PurchaseForm({ packageSlug }: PurchaseFormProps) {
                 <p>
                     Here are the vouchers you've purchased with this number.
                 </p>
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                     {state.existingVouchers.map((voucher, index) => (
                         <Card key={index} className="p-3 border-dashed">
                             <CardHeader className="p-0 mb-2 flex-row justify-between items-start">

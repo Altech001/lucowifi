@@ -25,40 +25,40 @@ export function PaymentForm({ selectedPackage }: PaymentFormProps) {
         const formData = new FormData(event.currentTarget);
         const data = Object.fromEntries(formData.entries());
 
-        try {
-            const response = await fetch('/api/pesapal/submit-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: selectedPackage.price,
-                    email: data.email,
-                    phone_number: data.phone_number,
-                    first_name: data.first_name,
-                    last_name: data.last_name,
-                    package_slug: selectedPackage.slug, // Pass package info
-                }),
-            });
+        // try {
+        //     const response = await fetch('/api/pesapal/submit-order', {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({
+        //             amount: selectedPackage.price,
+        //             email: data.email,
+        //             phone_number: data.phone_number,
+        //             first_name: data.first_name,
+        //             last_name: data.last_name,
+        //             package_slug: selectedPackage.slug, // Pass package info
+        //         }),
+        //     });
 
-            const result = await response.json();
+        //     const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.details || result.error || 'Failed to initiate payment.');
-            }
+        //     if (!response.ok) {
+        //         throw new Error(result.details || result.error || 'Failed to initiate payment.');
+        //     }
 
-            if (result.redirect_url) {
-                window.location.href = result.redirect_url;
-            } else {
-                throw new Error('Could not get payment URL from server.');
-            }
-        } catch (err: any) {
-            console.error("Payment initiation failed:", err);
-            setError(err.message);
-            toast({
-                variant: 'destructive',
-                title: 'Payment Error',
-                description: err.message,
-            });
-        }
+        //     if (result.redirect_url) {
+        //         window.location.href = result.redirect_url;
+        //     } else {
+        //         throw new Error('Could not get payment URL from server.');
+        //     }
+        // } catch (err: any) {
+        //     console.error("Payment initiation failed:", err);
+        //     setError(err.message);
+        //     toast({
+        //         variant: 'destructive',
+        //         title: 'Payment Error',
+        //         description: err.message,
+        //     });
+        // }
     };
 
     return (
