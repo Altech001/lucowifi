@@ -3,7 +3,7 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { initiatePaymentAction, checkPaymentStatusAction } from '@/app/actions';
+import { processPaymentAction, checkPaymentStatusAction } from '@/app/actions';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -61,7 +61,7 @@ function CountdownTimer({ onTimeout }: { onTimeout: () => void }) {
 
 export function PaymentForm() {
     const { toast } = useToast();
-    const [state, formAction, isInitiating] = useActionState(initiatePaymentAction, initialFormState);
+    const [state, formAction, isInitiating] = useActionState(processPaymentAction, initialFormState);
     const formRef = useRef<HTMLFormElement>(null);
     
     const [isCheckingStatus, startStatusCheck] = useTransition();

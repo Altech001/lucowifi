@@ -1,6 +1,22 @@
 
 import { z } from 'zod';
 
+export const ProcessPaymentInputSchema = z.object({
+  amount: z.string(),
+  number: z.string(),
+  username: z.string(),
+  password: z.string(),
+});
+export type ProcessPaymentInput = z.infer<typeof ProcessPaymentInputSchema>;
+
+export const ProcessPaymentOutputSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.any().optional(),
+});
+export type ProcessPaymentOutput = z.infer<typeof ProcessPaymentOutputSchema>;
+
+
 export const CheckPaymentStatusInputSchema = z.object({
   transactionReference: z.string().describe('The transaction reference to check.'),
   username: z.string(),

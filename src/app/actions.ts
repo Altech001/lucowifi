@@ -7,8 +7,9 @@ import { sendWhatsappVoucher } from '@/ai/flows/whatsapp-voucher-delivery';
 import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
 import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
+import { processPayment } from '@/ai/flows/process-payment';
 import { checkPaymentStatus } from '@/ai/flows/check-payment-status';
-import { CheckPaymentStatusOutputSchema } from '@/lib/payment-definitions';
+import { CheckPaymentStatusOutputSchema, type ProcessPaymentInput, type ProcessPaymentOutput } from '@/lib/payment-definitions';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Package, Voucher, PopupSettings } from '@/lib/definitions';
@@ -880,6 +881,29 @@ export async function updatePopupSettingsAction(prevState: PopupSettingsState, f
     }
 }
 
+
+export async function processPaymentAction(
+  prevState: ProcessPaymentOutput,
+  formData: FormData
+): Promise<ProcessPaymentOutput> {
+  const amount = formData.get('amount') as string;
+  const number = formData.get('number') as string;
+  
+  const username = process.env.PAYMENT_API_USERNAME;
+  const password = process.env.PAYMENT_API_PASSWORD;
+
+  if (!username || !password) {
+    return { success: false, message: 'Payment provider credentials not configured.' };
+  }
+
+  try {
+    const result = await processPayment({ amount, number, username, password });
+    return result;
+  } catch (error: any) {
+    console.error("Process payment action failed:", error);
+    return { success: false, message: error.message || 'An unknown server error occurred.' };
+  }
+}
 
 export async function checkPaymentStatusAction(
   transactionReference: string
