@@ -49,7 +49,9 @@ export function PesapalSettings({ ipnLogs }: PesapalSettingsProps) {
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.details?.error?.message || result.details || result.error || 'Failed to initiate payment.');
+                // Extract a readable error message from the JSON response
+                const errorMessage = result.details?.error?.message || (typeof result.details === 'string' ? result.details : result.error) || JSON.stringify(result);
+                throw new Error(errorMessage);
             }
 
             if (result.redirect_url) {
