@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
             <Lock className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="font-headline text-2xl">
-            Admin Panel Access
+            Admin Access
           </CardTitle>
           <CardDescription>
             Please enter the password to continue.

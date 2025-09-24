@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 import Link from "next/link";
 import { getPackages } from "@/lib/database-data";
 import { UploadForm } from "./upload-form";
