@@ -51,7 +51,7 @@ const initiatePesapalPaymentFlow = ai.defineFlow(
                 email_address: input.email,
                 phone_number: input.phoneNumber,
                 country_code: 'UG',
-                first_name: 'VoucherWave',
+                first_name: 'VoucherWave', // Using placeholder names
                 last_name: 'Customer',
             },
         };
