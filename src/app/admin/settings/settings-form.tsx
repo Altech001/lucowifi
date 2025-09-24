@@ -1,6 +1,3 @@
-
-
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { addPromotionAction, deletePromotionAction, exportUserPhonesAction, sendBulkMessageAction, generateAIMessageAction } from '@/app/actions';
@@ -18,7 +15,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AnnouncementsForm } from './announcements-form';
 import { PopupForm } from './popup-form';
 import { PaymentForm } from './payment-form';
-import { PesapalForm } from './pesapal-form';
 
 const initialPromoState = {
     message: '',
@@ -117,8 +113,6 @@ export function SettingsForm({ packages, promotions, announcements, popupSetting
                  <AnnouncementsForm announcements={announcements} />
                  
                  <PaymentForm />
-
-                 <PesapalForm />
 
                 <Card>
                     <CardHeader>
