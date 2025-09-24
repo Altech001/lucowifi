@@ -1,4 +1,5 @@
 
+
 const APP_ENVIRONMENT = process.env.NEXT_PUBLIC_PESAPAL_ENV || 'sandbox';
 const BASE_API_URL = APP_ENVIRONMENT === 'sandbox'
   ? 'https://cybqa.pesapal.com/pesapalv3/api'

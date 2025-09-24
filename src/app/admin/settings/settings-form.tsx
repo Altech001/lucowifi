@@ -15,6 +15,7 @@ import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AnnouncementsForm } from './announcements-form';
 import { PopupForm } from './popup-form';
+import { PaymentForm } from './payment-form';
 
 const initialPromoState = {
     message: '',
