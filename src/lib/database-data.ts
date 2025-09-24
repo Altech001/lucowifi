@@ -1,10 +1,11 @@
 
 
-
 import { db } from './firebase';
 import { ref, get, child, set } from 'firebase/database';
 import type { Package, Voucher, Membership, Promotion, Announcement, PopupSettings } from './definitions';
 import { isAfter, addHours, parseISO, formatDistanceToNow, format } from 'date-fns';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 export async function getPackages(): Promise<Package[]> {
   const dbRef = ref(db);
@@ -237,4 +238,17 @@ export async function getPopupSettings(): Promise<PopupSettings> {
 export async function updatePopupSettings(settings: PopupSettings): Promise<void> {
     const dbRef = ref(db, 'settings/popup');
     await set(dbRef, settings);
+}
+
+export async function getIpnLogs(): Promise<string> {
+    const logFile = path.join(process.cwd(), 'pin.json');
+    try {
+        // Ensure the file exists before trying to read it
+        await fs.access(logFile);
+        const data = await fs.readFile(logFile, 'utf8');
+        return data;
+    } catch (error) {
+        // If file does not exist, return empty string
+        return "";
+    }
 }

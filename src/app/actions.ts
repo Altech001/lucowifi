@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -6,7 +7,6 @@ import { sendWhatsappVoucher } from '@/ai/flows/whatsapp-voucher-delivery';
 import { analyzeMikrotikProfiles } from '@/ai/flows/analyze-mikrotik-profiles';
 import { membershipSignup } from '@/ai/flows/membership-signup';
 import { sendBulkMessage, generateMessage } from '@/ai/flows/send-bulk-message';
-import { processPayment } from '@/ai/flows/process-payment';
 import { checkPaymentStatus } from '@/ai/flows/check-payment-status';
 import { CheckPaymentStatusOutputSchema } from '@/lib/payment-definitions';
 import { promises as fs } from 'fs';
@@ -881,71 +881,6 @@ export async function updatePopupSettingsAction(prevState: PopupSettingsState, f
 }
 
 
-// Payment Actions
-const ProcessPaymentInputSchema = z.object({
-  amount: z.string().min(1, { message: 'Amount is required.' }),
-  number: z.string().min(10, { message: 'Phone number seems too short.' }),
-  username: z.string(),
-  password: z.string(),
-});
-export type ProcessPaymentInput = z.infer<typeof ProcessPaymentInputSchema>;
-
-export type ProcessPaymentOutput = {
-    success: boolean;
-    message: string;
-    data?: any;
-}
-
-type PaymentActionState = {
-  message: string;
-  success: boolean;
-  data?: any;
-};
-
-const paymentSchema = z.object({
-  amount: z.string().min(1, { message: 'Amount is required.' }),
-  number: z.string().min(10, { message: 'Phone number seems too short.' }),
-});
-
-export async function initiatePaymentAction(prevState: PaymentActionState, formData: FormData): Promise<PaymentActionState> {
-    const validation = paymentSchema.safeParse({
-        amount: formData.get('amount'),
-        number: formData.get('number'),
-    });
-
-    if (!validation.success) {
-        return {
-            success: false,
-            message: validation.error.errors[0].message,
-        };
-    }
-
-    const { amount, number } = validation.data;
-    const username = process.env.PAYMENT_API_USERNAME;
-    const password = process.env.PAYMENT_API_PASSWORD;
-
-    if (!username || !password) {
-        return { success: false, message: 'Payment credentials are not configured.' };
-    }
-
-    try {
-        const result = await processPayment({ amount, number, username, password });
-        return {
-            success: result.success,
-            message: result.message,
-            data: result.data,
-        };
-    } catch (error) {
-        console.error("Payment initiation action failed:", error);
-        const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
-        return {
-            success: false,
-            message: errorMessage,
-        };
-    }
-}
-
-
 export async function checkPaymentStatusAction(
   transactionReference: string
 ): Promise<z.infer<typeof CheckPaymentStatusOutputSchema>> {
@@ -972,4 +907,17 @@ export async function checkPaymentStatusAction(
       message: errorMessage,
     };
   }
+}
+
+
+export async function clearIpnLogsAction(): Promise<{success: boolean, message: string}> {
+    const logFile = path.join(process.cwd(), 'pin.json');
+    try {
+        await fs.writeFile(logFile, '');
+        revalidatePath('/admin/settings');
+        return { success: true, message: 'IPN logs cleared successfully.' };
+    } catch (error) {
+        console.error("Failed to clear IPN logs:", error);
+        return { success: false, message: 'Failed to clear IPN logs.' };
+    }
 }

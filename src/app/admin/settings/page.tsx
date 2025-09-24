@@ -1,7 +1,5 @@
 
-
-
-import { getPackages, getPromotions, getAnnouncements, getPopupSettings } from "@/lib/database-data";
+import { getPackages, getPromotions, getAnnouncements, getPopupSettings, getIpnLogs } from "@/lib/database-data";
 import { SettingsForm } from "./settings-form";
 import {
   Breadcrumb,
@@ -12,6 +10,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import Link from "next/link";
 import { Settings } from "lucide-react";
+import { PesapalSettings } from "./pesapal-settings";
 
 
 export default async function SettingsPage() {
@@ -19,9 +18,10 @@ export default async function SettingsPage() {
     const promotions = await getPromotions();
     const announcements = await getAnnouncements();
     const popupSettings = await getPopupSettings();
+    const ipnLogs = await getIpnLogs();
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-8">
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
@@ -38,12 +38,15 @@ export default async function SettingsPage() {
                 <h1 className="text-2xl font-semibold font-headline">Application Settings</h1>
             </div>
             
-            <SettingsForm 
-                packages={packages} 
-                promotions={promotions} 
-                announcements={announcements} 
-                popupSettings={popupSettings}
-            />
+             <div className="grid gap-8 md:grid-cols-2">
+                <SettingsForm 
+                    packages={packages} 
+                    promotions={promotions} 
+                    announcements={announcements} 
+                    popupSettings={popupSettings}
+                />
+                <PesapalSettings ipnLogs={ipnLogs} />
+             </div>
         </div>
     )
 }

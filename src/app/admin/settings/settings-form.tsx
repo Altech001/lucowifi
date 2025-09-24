@@ -1,3 +1,4 @@
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { addPromotionAction, deletePromotionAction, exportUserPhonesAction, sendBulkMessageAction, generateAIMessageAction } from '@/app/actions';
@@ -14,7 +15,6 @@ import { Gift, Trash2, Download, FileDown, Phone, MessageSquare, Send, Sparkles,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AnnouncementsForm } from './announcements-form';
 import { PopupForm } from './popup-form';
-import { PaymentForm } from './payment-form';
 
 const initialPromoState = {
     message: '',
@@ -108,138 +108,132 @@ export function SettingsForm({ packages, promotions, announcements, popupSetting
     }
 
     return (
-        <div className="grid gap-8 md:grid-cols-2">
-            <div className="space-y-8">
-                 <AnnouncementsForm announcements={announcements} />
-                 
-                 <PaymentForm />
+        <div className="space-y-8">
+             <AnnouncementsForm announcements={announcements} />
+             <PopupForm settings={popupSettings} />
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-3">
-                            <Gift className="h-6 w-6" />
-                            <CardTitle>Manage Promotions</CardTitle>
-                        </div>
-                        <CardDescription>Add or remove promotional voucher codes that will be displayed on the home page.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <form ref={addFormRef} action={addFormAction} className="p-4 border rounded-lg space-y-4">
-                             <h3 className="font-semibold">Add New Promotion</h3>
-                             <div className="space-y-2">
-                                <Label htmlFor="code">Promo Code</Label>
-                                <Input id="code" name="code" placeholder="e.g., FREEWIFI" required />
-                             </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="packageSlug">For Package</Label>
-                                <Select name="packageSlug" required>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a package..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {packages.filter(p => p.slug !== 'monthly-membership').map(p => (
-                                            <SelectItem key={p.slug} value={p.slug}>{p.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                             </div>
-                             <SubmitButton>Add Promotion</SubmitButton>
-                        </form>
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <Gift className="h-6 w-6" />
+                        <CardTitle>Manage Promotions</CardTitle>
+                    </div>
+                    <CardDescription>Add or remove promotional voucher codes that will be displayed on the home page.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <form ref={addFormRef} action={addFormAction} className="p-4 border rounded-lg space-y-4">
+                         <h3 className="font-semibold">Add New Promotion</h3>
+                         <div className="space-y-2">
+                            <Label htmlFor="code">Promo Code</Label>
+                            <Input id="code" name="code" placeholder="e.g., FREEWIFI" required />
+                         </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="packageSlug">For Package</Label>
+                            <Select name="packageSlug" required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a package..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {packages.filter(p => p.slug !== 'monthly-membership').map(p => (
+                                        <SelectItem key={p.slug} value={p.slug}>{p.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                         </div>
+                         <SubmitButton>Add Promotion</SubmitButton>
+                    </form>
 
-                        <div>
-                            <h3 className="font-semibold mb-2">Current Promotions</h3>
-                            <div className="border rounded-lg max-h-60 overflow-y-auto">
-                                <Table>
-                                    <TableHeader className="sticky top-0 bg-muted">
-                                        <TableRow>
-                                            <TableHead>Code</TableHead>
-                                            <TableHead>Package</TableHead>
-                                            <TableHead className="text-right">Action</TableHead>
+                    <div>
+                        <h3 className="font-semibold mb-2">Current Promotions</h3>
+                        <div className="border rounded-lg max-h-60 overflow-y-auto">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-muted">
+                                    <TableRow>
+                                        <TableHead>Code</TableHead>
+                                        <TableHead>Package</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {promotions.length > 0 ? promotions.map(promo => (
+                                        <TableRow key={promo.id}>
+                                            <TableCell className="font-mono">{promo.code}</TableCell>
+                                            <TableCell>{promo.packageName}</TableCell>
+                                            <TableCell className="text-right">
+                                                <form action={deletePromotionAction}>
+                                                    <input type="hidden" name="promotionId" value={promo.id} />
+                                                    <SubmitButton variant="ghost" size="icon" className="text-destructive h-8 w-8">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </SubmitButton>
+                                                </form>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {promotions.length > 0 ? promotions.map(promo => (
-                                            <TableRow key={promo.id}>
-                                                <TableCell className="font-mono">{promo.code}</TableCell>
-                                                <TableCell>{promo.packageName}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <form action={deletePromotionAction}>
-                                                        <input type="hidden" name="promotionId" value={promo.id} />
-                                                        <SubmitButton variant="ghost" size="icon" className="text-destructive h-8 w-8">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </SubmitButton>
-                                                    </form>
-                                                </TableCell>
-                                            </TableRow>
-                                        )) : (
-                                            <TableRow>
-                                                <TableCell colSpan={3} className="text-center h-24">No promotions yet.</TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center h-24">No promotions yet.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="space-y-8">
-                 <PopupForm settings={popupSettings} />
+                    </div>
+                </CardContent>
+            </Card>
 
-                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-3">
-                            <MessageSquare className="h-6 w-6" />
-                            <CardTitle>Send Bulk Message</CardTitle>
+             <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <MessageSquare className="h-6 w-6" />
+                        <CardTitle>Send Bulk Message</CardTitle>
+                    </div>
+                    <CardDescription>Send a custom SMS to all users who have purchased a voucher or signed up.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form ref={bulkFormRef} action={bulkFormAction} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="message">Message Content</Label>
+                            <Textarea id="message" name="message" required placeholder="Your message here..." value={messageContent} onChange={e => setMessageContent(e.target.value)} rows={5}/>
                         </div>
-                        <CardDescription>Send a custom SMS to all users who have purchased a voucher or signed up.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form ref={bulkFormRef} action={bulkFormAction} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="message">Message Content</Label>
-                                <Textarea id="message" name="message" required placeholder="Your message here..." value={messageContent} onChange={e => setMessageContent(e.target.value)} rows={5}/>
+                        <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
+                            <Label htmlFor="messageType">AI Message Generation</Label>
+                            <div className="flex gap-2">
+                                <Input id="messageType" name="messageType" placeholder="e.g., Weekend promotion, Network maintenance" />
+                                <Button type="button" variant="outline" onClick={handleGenerateMessage} disabled={isGenerating}>
+                                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    Generate
+                                </Button>
                             </div>
-                            <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
-                                <Label htmlFor="messageType">AI Message Generation</Label>
-                                <div className="flex gap-2">
-                                    <Input id="messageType" name="messageType" placeholder="e.g., Weekend promotion, Network maintenance" />
-                                    <Button type="button" variant="outline" onClick={handleGenerateMessage} disabled={isGenerating}>
-                                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                        Generate
-                                    </Button>
-                                </div>
-                                <p className="text-xs text-muted-foreground">Let AI help you write the perfect message.</p>
-                            </div>
-                             <SubmitButton className="w-full">
-                                <Send className="mr-2 h-4 w-4" />
-                                Send Message to All Users
-                            </SubmitButton>
-                        </form>
-                    </CardContent>
-                </Card>
+                            <p className="text-xs text-muted-foreground">Let AI help you write the perfect message.</p>
+                        </div>
+                         <SubmitButton className="w-full">
+                            <Send className="mr-2 h-4 w-4" />
+                            Send Message to All Users
+                        </SubmitButton>
+                    </form>
+                </CardContent>
+            </Card>
 
-                <Card>
-                    <CardHeader>
-                         <div className="flex items-center gap-3">
-                            <FileDown className="h-6 w-6" />
-                            <CardTitle>Data Export</CardTitle>
-                        </div>
-                        <CardDescription>Download user data from the system.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                           <div className="flex items-center gap-3">
-                                <Phone className="h-5 w-5" />
-                                <p className="font-medium">User Phone Numbers</p>
-                           </div>
-                           <Button onClick={handleExport}>
-                                <Download className="mr-2 h-4 w-4" />
-                                Export CSV
-                           </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            <Card>
+                <CardHeader>
+                     <div className="flex items-center gap-3">
+                        <FileDown className="h-6 w-6" />
+                        <CardTitle>Data Export</CardTitle>
+                    </div>
+                    <CardDescription>Download user data from the system.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                       <div className="flex items-center gap-3">
+                            <Phone className="h-5 w-5" />
+                            <p className="font-medium">User Phone Numbers</p>
+                       </div>
+                       <Button onClick={handleExport}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Export CSV
+                       </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }
