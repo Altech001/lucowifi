@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import { PesapalSettings } from "./pesapal-settings";
+import { PaymentForm } from "./payment-form";
 
 
 export default async function SettingsPage() {
@@ -45,7 +46,10 @@ export default async function SettingsPage() {
                     announcements={announcements} 
                     popupSettings={popupSettings}
                 />
-                <PesapalSettings ipnLogs={ipnLogs} />
+                <div className="space-y-8">
+                    <PaymentForm />
+                    <PesapalSettings ipnLogs={ipnLogs} />
+                </div>
              </div>
         </div>
     )
