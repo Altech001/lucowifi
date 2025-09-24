@@ -1,3 +1,4 @@
+
 // The consumer key and secret are sensitive and should be stored in environment variables.
 export interface PaymentRequest {
   id: string; // Your unique merchant reference for the transaction.
